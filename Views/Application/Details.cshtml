@@ -1,0 +1,230 @@
+﻿@model PersonalCabinet.Models.Application
+@{
+    ViewData["Title"] = "Детали заявки";
+}
+
+<link rel="stylesheet" href="/css/details.css" />
+
+<div class="page-title"><i class="bi bi-file-earmark-text"></i> Заявка №@Model.ApplicationNumber</div>
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card-cabinet">
+            <div class="card-header">Информация о заявке</div>
+            <div class="card-body">
+                <div class="row mb-2">
+                    <div class="col-3 fw-bold">Статус:</div>
+                    <div class="col-9">
+                        @switch (Model.Status)
+                        {
+                            case "Draft":
+                                <span class="badge-status badge-draft">Черновик</span>
+                                break;
+                            case "Submitted":
+                                <span class="badge-status badge-submitted">Подана</span>
+                                break;
+                            case "InReview":
+                                <span class="badge-status badge-inreview">На рассмотрении</span>
+                                break;
+                            case "Approved":
+                                <span class="badge-status badge-approved">Одобрена</span>
+                                break;
+                            case "Rejected":
+                                <span class="badge-status badge-rejected">Отклонена</span>
+                                break;
+                            case "Completed":
+                                <span class="badge-status badge-submitted">Завершена</span>
+                                break;
+                            default:
+                                <span>@Model.Status</span>
+                                break;
+                        }
+                    </div>
+                </div>
+                <div class="row mb-2"><div class="col-3 fw-bold">Название:</div><div class="col-9">@Model.Title</div></div>
+                <div class="row mb-2"><div class="col-3 fw-bold">Причина обращения:</div><div class="col-9">@(Model.ApplicationReason ?? "—")</div></div>
+                <hr />
+                <div class="row mb-2"><div class="col-3 fw-bold">Энергопринимающее устройство:</div><div class="col-9">@(Model.EnergyDeviceName ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-3 fw-bold">Адрес устройства:</div><div class="col-9">@(Model.DeviceAddress ?? Model.ObjectAddress)</div></div>
+                <div class="row mb-2"><div class="col-3 fw-bold">Запрашиваемая мощность:</div><div class="col-9">@(Model.RequestedPower?.ToString("0.##") ?? "—") кВт</div></div>
+                <div class="row mb-2"><div class="col-3 fw-bold">Ранее присоединённая мощность:</div><div class="col-9">@(Model.PreviousPowerKw?.ToString("0.##") ?? "—") кВт</div></div>
+                <div class="row mb-2"><div class="col-3 fw-bold">Общая присоединённая мощность:</div><div class="col-9">@(Model.TotalPowerKw?.ToString("0.##") ?? "—") кВт</div></div>
+                <div class="row mb-2"><div class="col-3 fw-bold">Категория надёжности:</div><div class="col-9">@(Model.ReliabilityCategory ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-3 fw-bold">Сроки проектирования:</div><div class="col-9">@(Model.DesignDeadline?.ToString("dd.MM.yyyy") ?? "—")</div></div>
+                <hr />
+                <div class="row mb-2"><div class="col-3 fw-bold">Описание:</div><div class="col-9">@(Model.Description ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-3 fw-bold">Дата подачи:</div><div class="col-9">@(Model.SubmittedAt?.ToString("dd.MM.yyyy HH:mm") ?? "—")</div></div>
+            </div>
+        </div>
+
+        <div class="card-cabinet mt-4">
+            <div class="card-header">Документы</div>
+            <div class="card-body">
+                @if (Model.Documents.Any())
+                {
+                        <ul>
+                        @foreach (var d in Model.Documents)
+                        {
+                                    <li><a href="@d.FilePath" target="_blank">@d.OriginalFileName</a> (@d.UploadedAt?.ToString("dd.MM.yyyy"))</li>
+                        }
+                        </ul>
+                }
+                else
+                {
+                        <p>Нет документов.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card-cabinet">
+            <div class="card-header">Данные заявителя</div>
+            <div class="card-body">
+                <div class="row mb-2"><div class="col-4 fw-bold">ФИО:</div><div class="col-8">@($"{Model.LastName} {Model.FirstName} {Model.MiddleName}".Trim())</div></div>
+                <div class="row mb-2"><div class="col-4 fw-bold">Место жительства:</div><div class="col-8">@(Model.ResidenceAddress ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-4 fw-bold">Телефон:</div><div class="col-8">@(Model.Phone ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-4 fw-bold">ИНН:</div><div class="col-8">@(Model.Inn ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-4 fw-bold">Паспорт:</div><div class="col-8">@(Model.PassportSeries) @(Model.PassportNumber)</div></div>
+                <div class="row mb-2"><div class="col-4 fw-bold">Дата выдачи:</div><div class="col-8">@(Model.PassportDate?.ToString("dd.MM.yyyy") ?? "—")</div></div>
+            </div>
+        </div>
+    </div>
+</div> 
+<div class="mt-3 d-flex gap-2">
+    <a href="/Application/Index" class="btn-cabinet-outline">Назад</a>
+    @if (Model.Status == "Draft" || Model.Status == "Rejected")
+    {
+            <a href="/Application/Edit/@Model.Id" class="btn-cabinet-outline">Редактировать</a>
+            <button type="button" class="btn-cabinet btn-success" data-bs-toggle="modal" data-bs-target="#submitModal">
+                <i class="bi bi-send"></i> Отправить на рассмотрение
+            </button>
+    }
+</div>
+<div class="modal fade" id="submitModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение отправки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Отправить заявку №@Model.ApplicationNumber на рассмотрение? Редактирование будет невозможно.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cabinet-outline" data-bs-dismiss="modal">Отмена</button>
+                <form method="post" asp-action="Submit">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn-cabinet btn-success">Да, отправить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="chat-widget">
+    <button id="chat-toggle" title="Чат"><i class="bi bi-chat-dots-fill"></i></button>
+    <div id="chat-window" style="display: none;">
+        <div class="chat-header">
+            <span><i class="bi bi-headset"></i> Чат с оператором</span>
+            <button id="chat-close"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            @foreach (var msg in Model.Messages.OrderBy(m => m.CreatedAt))
+            {
+                string senderName = "Пользователь";
+                if (msg.Sender != null)
+                {
+                    if (msg.Sender.Role == "Admin")
+                    {
+                            senderName = $"Оператор {msg.Sender.IndividualProfile.LastName} {msg.Sender.IndividualProfile.FirstName} {msg.Sender.IndividualProfile.MiddleName}".Trim();
+                    }
+                    else
+                    {
+                        if (msg.Sender.UserType == "INDIVIDUAL" && msg.Sender.IndividualProfile != null)
+                        {
+                            senderName = $"{msg.Sender.IndividualProfile.LastName} {msg.Sender.IndividualProfile.FirstName} {msg.Sender.IndividualProfile.MiddleName}".Trim();
+                        }
+                        else if (msg.Sender.UserType == "ORGANIZATION" && msg.Sender.OrganizationProfile != null)
+                        {
+                            senderName = msg.Sender.OrganizationProfile.ShortName ?? msg.Sender.OrganizationProfile.FullName ?? msg.Sender.Email;
+                        }
+                        else
+                        {
+                            senderName = msg.Sender.Email;
+                        }
+                    }
+                }
+                
+                    <div class="chat-message @(msg.SenderId == (long?)ViewBag.CurrentUserId ? "user" : "operator")">
+                        <p>@msg.Message1</p>
+                        <small>@senderName · @msg.CreatedAt?.ToString("dd.MM.yyyy HH:mm")</small>
+                    </div>
+            }
+        </div>
+        <div class="chat-input">
+            <form id="chat-form">
+                <input type="text" id="chat-text" placeholder="Напишите сообщение..." autocomplete="off" required />
+                <button type="submit"><i class="bi bi-send-fill"></i></button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const chatWindow = document.getElementById('chat-window');
+        const toggleBtn = document.getElementById('chat-toggle');
+        const closeBtn = document.getElementById('chat-close');
+        const chatForm = document.getElementById('chat-form');
+        const chatText = document.getElementById('chat-text');
+        const messagesContainer = document.getElementById('chat-messages');
+
+        function openChat() {
+            chatWindow.style.display = 'flex';
+            toggleBtn.style.display = 'none';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        function closeChat() {
+            chatWindow.style.display = 'none';
+            toggleBtn.style.display = 'flex';
+        }
+        toggleBtn.addEventListener('click', openChat);
+        closeBtn.addEventListener('click', closeChat);
+
+        chatForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const text = chatText.value.trim();
+            if (!text) return;
+
+            const formData = new FormData();
+            formData.append('id', '@Model.Id');
+            formData.append('messageText', text);
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            const response = await fetch('/Application/SendMessage', {
+                method: 'POST',
+                body: formData,
+                headers: { 'RequestVerificationToken': token }
+            });
+            if (response.ok) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-message user';
+                const now = new Date();
+                const timeStr = now.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                messageDiv.innerHTML = `<p>${escapeHtml(text)}</p><small>Вы · ${timeStr}</small>`;
+                messagesContainer.appendChild(messageDiv);
+                chatText.value = '';
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        });
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function (m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+    });
+</script>

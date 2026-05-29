@@ -1,0 +1,53 @@
+﻿@model PersonalCabinet.Models.User
+@{
+    ViewData["Title"] = "Пользователь " + Model.Email;
+}
+<div class="page-title"><i class="bi bi-person"></i> Пользователь @Model.Email</div>
+<div class="card-cabinet">
+    <div class="card-header">Основные данные</div>
+    <div class="card-body">
+        <div class="row mb-2"><div class="col-3 fw-bold">ID:</div><div class="col-9">@Model.Id</div></div>
+        <div class="row mb-2"><div class="col-3 fw-bold">Email:</div><div class="col-9">@Model.Email</div></div>
+        <div class="row mb-2"><div class="col-3 fw-bold">Телефон:</div><div class="col-9">@(Model.Phone ?? "—")</div></div>
+        <div class="row mb-2"><div class="col-3 fw-bold">Роль:</div><div class="col-9">@Model.Role</div></div>
+        <div class="row mb-2"><div class="col-3 fw-bold">Тип:</div><div class="col-9">@Model.UserType</div></div>
+        <div class="row mb-2"><div class="col-3 fw-bold">Хэш пароля:</div><div class="col-9"><code>@Model.PasswordHash</code></div></div>
+        <div class="row mb-2"><div class="col-3 fw-bold">Дата регистрации:</div><div class="col-9">@(Model.CreatedAt?.ToString("dd.MM.yyyy HH:mm") ?? "—")</div></div>
+        <div class="row mb-2"><div class="col-3 fw-bold">Последнее обновление:</div><div class="col-9">@(Model.UpdatedAt?.ToString("dd.MM.yyyy HH:mm") ?? "—")</div></div>
+    </div>
+</div>
+@if (Model.IndividualProfile != null)
+{
+        <div class="card-cabinet mt-4">
+            <div class="card-header">Профиль физического лица</div>
+            <div class="card-body">
+                <div class="row mb-2"><div class="col-3 fw-bold">ФИО:</div><div class="col-9">@Model.IndividualProfile.LastName @Model.IndividualProfile.FirstName @Model.IndividualProfile.MiddleName</div></div>
+            </div>
+        </div>
+}
+@if (Model.OrganizationProfile != null)
+{
+        <div class="card-cabinet mt-4">
+            <div class="card-header">Профиль организации</div>
+            <div class="card-body">
+                <div class="row mb-2"><div class="col-3 fw-bold">Полное наименование:</div><div class="col-9">@Model.OrganizationProfile.FullName</div></div>
+                <div class="row mb-2"><div class="col-3 fw-bold">Краткое наименование:</div><div class="col-9">@(Model.OrganizationProfile.ShortName ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-3 fw-bold">Контактное лицо:</div><div class="col-9">@(Model.OrganizationProfile.ContactPerson ?? "—")</div></div>
+            </div>
+        </div>
+}
+@if (Model.PersonalData != null)
+{
+        <div class="card-cabinet mt-4">
+            <div class="card-header">Дополнительные персональные данные</div>
+            <div class="card-body">
+                <div class="row mb-2"><div class="col-3 fw-bold">Место жительства:</div><div class="col-9">@(Model.PersonalData.ResidenceAddress ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-3 fw-bold">ИНН:</div><div class="col-9">@(Model.PersonalData.Inn ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-3 fw-bold">Паспорт:</div><div class="col-9">@(Model.PersonalData.PassportSeries) @(Model.PersonalData.PassportNumber)</div></div>
+                <div class="row mb-2"><div class="col-3 fw-bold">Дата выдачи:</div><div class="col-9">@(Model.PersonalData.PassportDate?.ToString("dd.MM.yyyy") ?? "—")</div></div>
+            </div>
+        </div>
+}
+<div class="mt-3">
+    <a href="@Url.Action("Users")" class="btn-cabinet-outline">Назад к списку</a>
+</div> 

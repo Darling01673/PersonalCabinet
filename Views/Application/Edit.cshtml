@@ -1,0 +1,359 @@
+﻿@model PersonalCabinet.Models.Application
+@{
+    ViewData["Title"] = "Редактирование заявки";
+}
+<link rel="stylesheet" href="/css/create.css" />
+
+<div class="page-title">
+    <i class="bi bi-pencil-square"></i> Редактирование заявки №@Model.ApplicationNumber
+</div>
+
+<div class="step-indicator">
+    <div class="step active" data-step="1">
+        <div class="step-circle">1</div>
+        <div class="step-label">Заявитель</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" data-step="2">
+        <div class="step-circle">2</div>
+        <div class="step-label">Объект и мощность</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" data-step="3">
+        <div class="step-circle">3</div>
+        <div class="step-label">Документы</div>
+    </div>
+</div>
+
+<div class="wizard-container">
+    <div class="wizard-content">
+        <form method="post" asp-action="Edit" enctype="multipart/form-data" id="wizardForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" value="@Model.Id" />
+            <div class="wizard-panel active" id="panel-1">
+                <div class="wizard-panel-title">
+                    <i class="bi bi-person-badge"></i> Данные заявителя
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label-cabinet">Фамилия *</label>
+                        <input type="text" name="LastName" class="form-control-cabinet" value="@Model.LastName" required />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label-cabinet">Имя *</label>
+                        <input type="text" name="FirstName" class="form-control-cabinet" value="@Model.FirstName" required />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label-cabinet">Отчество</label>
+                        <input type="text" name="MiddleName" class="form-control-cabinet" value="@Model.MiddleName" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-cabinet">Место жительства *</label>
+                    <input type="text" name="ResidenceAddress" class="form-control-cabinet" value="@Model.ResidenceAddress" required />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-cabinet">Контактный телефон</label>
+                        <input type="tel" name="Phone" class="form-control-cabinet" value="@Model.Phone" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-cabinet">ИНН</label>
+                        <input type="text" name="Inn" class="form-control-cabinet" maxlength="12" value="@Model.Inn" />
+                    </div>
+                </div>
+
+                <div class="wizard-panel-subtitle">Паспортные данные</div>
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label-cabinet">Серия *</label>
+                        <input type="text" name="PassportSeries" class="form-control-cabinet" maxlength="4" value="@Model.PassportSeries" required />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label-cabinet">Номер *</label>
+                        <input type="text" name="PassportNumber" class="form-control-cabinet" maxlength="6" value="@Model.PassportNumber" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-cabinet">Дата выдачи *</label>
+                        <input type="date" name="PassportDate" class="form-control-cabinet" value="@(Model.PassportDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-cabinet">Причина обращения *</label>
+                    <select name="ApplicationReason" class="form-control-cabinet" required>
+                        <option value="">— Выберите —</option>
+                        <option value="Новое строительство" selected="@(Model.ApplicationReason == "Новое строительство")">Новое строительство</option>
+                        <option value="Новое присоединение" selected="@(Model.ApplicationReason == "Новое присоединение")">Новое присоединение</option>
+                        <option value="Увеличение мощности" selected="@(Model.ApplicationReason == "Увеличение мощности")">Увеличение мощности</option>
+                        <option value="Изменение категорийности" selected="@(Model.ApplicationReason == "Изменение категорийности")">Изменение категорийности</option>
+                    </select>
+                </div>
+
+                <div class="wizard-buttons">
+                    <button type="button" class="btn-cabinet" onclick="validateAndNextStep(1)">Далее <i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
+            <div class="wizard-panel" id="panel-2">
+                <div class="wizard-panel-title">
+                    <i class="bi bi-building-gear"></i> Информация об объекте и мощности
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-cabinet">Название заявки *</label>
+                    <input type="text" name="Title" class="form-control-cabinet" value="@Model.Title" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-cabinet">Адрес объекта *</label>
+                    <input type="text" name="ObjectAddress" class="form-control-cabinet" value="@Model.ObjectAddress" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-cabinet">Наименование энергопринимающего устройства *</label>
+                    <input type="text" name="EnergyDeviceName" class="form-control-cabinet" value="@Model.EnergyDeviceName" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-cabinet">Адрес энергопринимающего устройства *</label>
+                    <input type="text" name="DeviceAddress" class="form-control-cabinet" value="@Model.DeviceAddress" required />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label-cabinet">Запрашиваемая мощность (кВт) *</label>
+                        <input type="number" step="1" name="RequestedPower" class="form-control-cabinet" value="@Model.RequestedPower" required />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label-cabinet">Ранее присоединённая мощность (кВт)</label>
+                        <input type="number" step="1" name="PreviousPowerKw" class="form-control-cabinet" value="@Model.PreviousPowerKw" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label-cabinet">Общая присоединённая мощность (кВт) *</label>
+                        <input type="number" step="1" name="TotalPowerKw" class="form-control-cabinet" value="@Model.TotalPowerKw" required />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-cabinet">Категория надёжности</label>
+                        <select name="ReliabilityCategory" class="form-control-cabinet">
+                            <option value="">— Не указана —</option>
+                            <option value="I категория" selected="@(Model.ReliabilityCategory == "I категория")">I категория</option>
+                            <option value="II категория" selected="@(Model.ReliabilityCategory == "II категория")">II категория</option>
+                            <option value="III категория" selected="@(Model.ReliabilityCategory == "III категория")">III категория</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-cabinet">Сроки проектирования</label>
+                        <input type="date" name="DesignDeadline" class="form-control-cabinet" value="@(Model.DesignDeadline?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-cabinet">Описание</label>
+                    <textarea name="Description" class="form-control-cabinet" rows="3">@Model.Description</textarea>
+                </div>
+
+                <div class="wizard-buttons">
+                    <button type="button" class="btn-cabinet-outline" onclick="prevStep()"><i class="bi bi-arrow-left"></i> Назад</button>
+                    <button type="button" class="btn-cabinet" onclick="validateAndNextStep(2)">Далее <i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
+            <div class="wizard-panel" id="panel-3">
+                <div class="wizard-panel-title">
+                    <i class="bi bi-paperclip"></i> Приложение к заявке
+                </div>
+
+                <p class="text-muted mb-3">
+                    Управление документами. Вы можете загрузить новые файлы или удалить существующие.
+                </p>
+
+                <div class="mb-3">
+                    <label class="form-label-cabinet">Загрузить новые файлы</label>
+                    <input type="file" name="Attachments" class="form-control-cabinet" multiple
+                           accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.zip,.rar" />
+                </div>
+
+                @if (Model.Documents != null && Model.Documents.Any())
+                {
+                        <h6>Существующие документы:</h6>
+                        <ul class="list-group mb-3">
+                        @foreach (var doc in Model.Documents)
+                        {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span><i class="bi bi-file-earmark-text"></i> @doc.OriginalFileName</span>
+                                        <form method="post" asp-action="DeleteDocument" onsubmit="return confirm('Удалить документ?');">
+                                            <input type="hidden" name="documentId" value="@doc.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </li>
+                        }
+                        </ul>
+                }
+                else
+                {
+                        <p class="text-muted">Нет загруженных документов.</p>
+                }
+
+                <div class="wizard-buttons">
+                    <button type="button" class="btn-cabinet-outline" onclick="prevStep()"><i class="bi bi-arrow-left"></i> Назад</button>
+                    <button type="submit" name="submitType" value="draft" class="btn-cabinet" formnovalidate>Сохранить черновик</button>
+                    @if (Model.Status == "Draft" || Model.Status == "Rejected")
+                    {
+                            <button type="submit" name="submitType" value="submit" class="btn-cabinet btn-success" formnovalidate>
+                                <i class="bi bi-send"></i> Отправить на рассмотрение
+                            </button>
+                    }
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="modal fade" id="validationWarningModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Внимание</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <i class="bi bi-exclamation-triangle"></i> Пожалуйста, заполните все обязательные поля (отмечены *)
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cabinet" data-bs-dismiss="modal">Понятно</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="confirmLeaveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение выхода</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Вы не сохранили изменения. Выйти без сохранения?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cabinet-outline" data-bs-dismiss="modal">Остаться</button>
+                <a href="/Application/Index" id="confirmLeaveBtn" class="btn-cabinet btn-danger">Выйти без сохранения</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="confirmSubmitModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение действия</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Вы уверены, что хотите сохранить изменения и перейти к деталям заявки?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cabinet-outline" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" id="confirmActionBtn" class="btn-cabinet btn-success">Да, сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateStepIndicator(step) {
+        document.querySelectorAll('.step').forEach((stepEl, index) => {
+            const stepNum = index + 1;
+            if (stepNum <= step) {
+                stepEl.classList.add('completed');
+                if (stepNum === step) stepEl.classList.add('active');
+                else stepEl.classList.remove('active');
+            } else {
+                stepEl.classList.remove('active', 'completed');
+            }
+        });
+    }
+
+    function validateStep(stepNumber) {
+        let panel = document.getElementById('panel-' + stepNumber);
+        let requiredFields = panel.querySelectorAll('[required]');
+        let isValid = true;
+        for (let field of requiredFields) {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        }
+        if (!isValid) {
+            let modal = new bootstrap.Modal(document.getElementById('validationWarningModal'));
+            modal.show();
+        }
+        return isValid;
+    }
+
+    function nextStep() {
+        let current = document.querySelector('.wizard-panel.active');
+        if (!current) return;
+        let next = current.nextElementSibling;
+        if (next && next.classList.contains('wizard-panel')) {
+            current.classList.remove('active');
+            next.classList.add('active');
+            let stepNumber = parseInt(next.id.split('-')[1]);
+            updateStepIndicator(stepNumber);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function prevStep() {
+        let current = document.querySelector('.wizard-panel.active');
+        if (!current) return;
+        let prev = current.previousElementSibling;
+        if (prev && prev.classList.contains('wizard-panel')) {
+            current.classList.remove('active');
+            prev.classList.add('active');
+            let stepNumber = parseInt(prev.id.split('-')[1]);
+            updateStepIndicator(stepNumber);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function validateAndNextStep(stepNumber) {
+        if (validateStep(stepNumber)) nextStep();
+    }
+    const backLinks = document.querySelectorAll('a[href="/Application/Index"]');
+    backLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            let confirmModal = new bootstrap.Modal(document.getElementById('confirmLeaveModal'));
+            confirmModal.show();
+            document.getElementById('confirmLeaveBtn').href = this.href;
+        });
+    });
+    const wizardForm = document.getElementById('wizardForm');
+    let pendingSubmitType = null;
+
+    wizardForm.addEventListener('submit', function(e) {
+        const submitter = e.submitter;
+        if (submitter && submitter.name === 'submitType') {
+            pendingSubmitType = submitter.value;
+            e.preventDefault();
+            const confirmModal = new bootstrap.Modal(document.getElementById('confirmSubmitModal'));
+            confirmModal.show();
+        }
+    });
+
+    document.getElementById('confirmActionBtn').addEventListener('click', function() {
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'submitType';
+        hiddenInput.value = pendingSubmitType;
+        wizardForm.appendChild(hiddenInput);
+        wizardForm.submit();
+    });
+</script>

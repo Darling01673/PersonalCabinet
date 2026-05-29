@@ -1,0 +1,335 @@
+﻿@model PersonalCabinet.ViewModels.CreateApplicationViewModel
+@{
+    ViewData["Title"] = "Подача заявки";
+}
+<link rel="stylesheet" href="/css/create.css" />
+<div class="page-title">
+    <i class="bi bi-plus-circle"></i> Подача заявки на технологическое присоединение
+</div>
+<div class="step-indicator">
+    <div class="step active" data-step="1">
+        <div class="step-circle">1</div>
+        <div class="step-label">Заявитель</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" data-step="2">
+        <div class="step-circle">2</div>
+        <div class="step-label">Объект и мощность</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" data-step="3">
+        <div class="step-circle">3</div>
+        <div class="step-label">Документы</div>
+    </div>
+</div>
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+<div class="wizard-container">
+    <div class="wizard-content">
+        <form method="post" asp-action="Create" enctype="multipart/form-data" id="wizardForm">
+            @Html.AntiForgeryToken()
+            <div class="wizard-panel active" id="panel-1">
+                <div class="wizard-panel-title" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span><i class="bi bi-person-badge"></i> Данные заявителя</span>
+                    <button type="button" id="fillFromProfileBtn" class="btn-fill-profile">
+                        <i class="bi bi-person-bounding-box"></i> Заполнить из профиля
+                    </button>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label-cabinet">Фамилия *</label>
+                        <input type="text" name="LastName" class="form-control-cabinet" value="@Model.LastName" required />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label-cabinet">Имя *</label>
+                        <input type="text" name="FirstName" class="form-control-cabinet" value="@Model.FirstName" required />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label-cabinet">Отчество</label>
+                        <input type="text" name="MiddleName" class="form-control-cabinet" value="@Model.MiddleName" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-cabinet">Место жительства *</label>
+                    <input type="text" name="ResidenceAddress" class="form-control-cabinet" value="@Model.ResidenceAddress" required />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-cabinet">Контактный телефон</label>
+                        <input type="tel" name="Phone" class="form-control-cabinet" value="@Model.Phone" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-cabinet">ИНН</label>
+                        <input type="text" name="Inn" class="form-control-cabinet" maxlength="12" value="@Model.Inn" />
+                    </div>
+                </div>
+
+                <div class="wizard-panel-subtitle">Паспортные данные</div>
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label-cabinet">Серия *</label>
+                        <input type="text" name="PassportSeries" class="form-control-cabinet" maxlength="4" value="@Model.PassportSeries" required />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label-cabinet">Номер *</label>
+                        <input type="text" name="PassportNumber" class="form-control-cabinet" maxlength="6" value="@Model.PassportNumber" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-cabinet">Дата выдачи *</label>
+                        <input type="date" name="PassportDate" class="form-control-cabinet" value="@(Model.PassportDate?.ToString("yyyy-MM-dd") ?? "")" required />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-cabinet">Причина обращения *</label>
+                    <select name="ApplicationReason" class="form-control-cabinet" required>
+                        <option value="">— Выберите —</option>
+                        <option value="Новое строительство" selected="@(Model.ApplicationReason == "Новое строительство")">Новое строительство</option>
+                        <option value="Новое присоединение" selected="@(Model.ApplicationReason == "Новое присоединение")">Новое присоединение</option>
+                        <option value="Увеличение мощности" selected="@(Model.ApplicationReason == "Увеличение мощности")">Увеличение мощности</option>
+                        <option value="Изменение категорийности" selected="@(Model.ApplicationReason == "Изменение категорийности")">Изменение категорийности</option>
+                    </select>
+                </div>
+
+                <div class="wizard-buttons">
+                    <button type="button" class="btn-cabinet" onclick="validateAndNextStep(1)">Далее <i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
+            <div class="wizard-panel" id="panel-2">
+                <div class="wizard-panel-title">
+                    <i class="bi bi-building-gear"></i> Информация об объекте и мощности
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-cabinet">Наименование энергопринимающего устройства *</label>
+                    <input type="text" name="EnergyDeviceName" class="form-control-cabinet" value="@Model.EnergyDeviceName" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-cabinet">Адрес энергопринимающего устройства *</label>
+                    <input type="text" name="DeviceAddress" class="form-control-cabinet" value="@Model.DeviceAddress" />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label-cabinet">Запрашиваемая мощность (кВт) *</label>
+                        <input type="number" step="0.01" name="RequestedPower" class="form-control-cabinet" value="@Model.RequestedPower" required />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label-cabinet">Ранее присоединённая мощность (кВт)</label>
+                        <input type="number" step="0.01" name="PreviousPowerKw" class="form-control-cabinet" value="@Model.PreviousPowerKw" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label-cabinet">Общая присоединённая мощность (кВт) *</label>
+                        <input type="number" step="0.01" name="TotalPowerKw" class="form-control-cabinet" value="@Model.TotalPowerKw" required />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-cabinet">Категория надёжности</label>
+                        <select name="ReliabilityCategory" class="form-control-cabinet">
+                            <option value="">— Не указана —</option>
+                            <option value="I категория" selected="@(Model.ReliabilityCategory == "I категория")">I категория</option>
+                            <option value="II категория" selected="@(Model.ReliabilityCategory == "II категория")">II категория</option>
+                            <option value="III категория" selected="@(Model.ReliabilityCategory == "III категория")">III категория</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-cabinet">Сроки проектирования</label>
+                        <input type="date" name="DesignDeadline" class="form-control-cabinet" value="@(Model.DesignDeadline?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                </div>
+
+                <div class="wizard-buttons">
+                    <button type="button" class="btn-cabinet-outline" onclick="prevStep()"><i class="bi bi-arrow-left"></i> Назад</button>
+                    <button type="button" class="btn-cabinet" onclick="validateAndNextStep(2)">Далее <i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
+            <div class="wizard-panel" id="panel-3">
+                <div class="wizard-panel-title">
+                    <i class="bi bi-paperclip"></i> Приложение к заявке
+                </div>
+
+                <p class="text-muted mb-3">
+                    Загрузите необходимые документы (план расположения, правоустанавливающие документы и т.д.).
+                    Допустимые форматы: PDF, JPG, PNG, DOCX, XLSX, ZIP. Максимум 10 файлов.
+                </p>
+
+                <div class="mb-3">
+                    <label class="form-label-cabinet">Выберите файлы</label>
+                    <input type="file" name="Attachments" class="form-control-cabinet" multiple
+                           accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.zip,.rar" />
+                </div>
+
+                <div class="wizard-buttons">
+                    <button type="button" class="btn-cabinet-outline" onclick="prevStep()"><i class="bi bi-arrow-left"></i> Назад</button>
+                    <button type="submit" name="submitType" value="draft" class="btn-cabinet" formnovalidate>Сохранить черновик</button>
+                    <button type="submit" name="submitType" value="submit" class="btn-cabinet btn-success" formnovalidate>
+                        <i class="bi bi-send"></i> Подать заявку
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="validationWarningModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Внимание</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <i class="bi bi-exclamation-triangle" style="font-size: 2rem; color: #ffc107; float: left; margin-right: 15px;"></i>
+                Пожалуйста, заполните все обязательные поля (отмечены <span style="color:#c62828;">*</span>)
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cabinet" data-bs-dismiss="modal">Понятно</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmFillModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение автозаполнения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <i class="bi bi-person-bounding-box" style="font-size: 1.5rem; float: left; margin-right: 10px;"></i>
+                Вы действительно хотите заполнить форму заявки данными из вашего профиля?<br />
+                Текущие значения будут заменены.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cabinet-outline" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn-cabinet" id="confirmFillBtn">Да, заполнить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateStepIndicator(step) {
+        document.querySelectorAll('.step').forEach((stepEl, index) => {
+            const stepNum = index + 1;
+            if (stepNum <= step) {
+                stepEl.classList.add('completed');
+                if (stepNum === step) stepEl.classList.add('active');
+                else stepEl.classList.remove('active');
+            } else {
+                stepEl.classList.remove('active', 'completed');
+            }
+        });
+    }
+
+    function validateStep(stepNumber) {
+        let panel = document.getElementById('panel-' + stepNumber);
+        let requiredFields = panel.querySelectorAll('[required]');
+        let isValid = true;
+        for (let field of requiredFields) {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+            if (field.tagName === 'SELECT' && field.value === '') {
+                field.classList.add('is-invalid');
+                isValid = false;
+            }
+        }
+        if (!isValid) {
+            let modal = new bootstrap.Modal(document.getElementById('validationWarningModal'));
+            modal.show();
+        }
+        return isValid;
+    }
+
+    function nextStep() {
+        let current = document.querySelector('.wizard-panel.active');
+        if (!current) return;
+        let next = current.nextElementSibling;
+        if (next && next.classList.contains('wizard-panel')) {
+            current.classList.remove('active');
+            next.classList.add('active');
+            let stepNumber = parseInt(next.id.split('-')[1]);
+            updateStepIndicator(stepNumber);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function prevStep() {
+        let current = document.querySelector('.wizard-panel.active');
+        if (!current) return;
+        let prev = current.previousElementSibling;
+        if (prev && prev.classList.contains('wizard-panel')) {
+            current.classList.remove('active');
+            prev.classList.add('active');
+            let stepNumber = parseInt(prev.id.split('-')[1]);
+            updateStepIndicator(stepNumber);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function validateAndNextStep(stepNumber) {
+        if (validateStep(stepNumber)) nextStep();
+    }
+
+    function fillFormWithProfileData(data) {
+        const setFieldValue = (fieldName, value) => {
+            if (!value) return;
+            let field = document.querySelector(`input[name="${fieldName}"], select[name="${fieldName}"]`);
+            if (field) {
+                field.value = value;
+                field.classList.remove('is-invalid');
+            }
+        };
+        setFieldValue('LastName', data.lastName);
+        setFieldValue('FirstName', data.firstName);
+        setFieldValue('MiddleName', data.middleName);
+        setFieldValue('Phone', data.phone);
+        setFieldValue('ResidenceAddress', data.residenceAddress);
+        setFieldValue('Inn', data.inn);
+        setFieldValue('PassportSeries', data.passportSeries);
+        setFieldValue('PassportNumber', data.passportNumber);
+        setFieldValue('PassportDate', data.passportDate);
+    }
+
+    const fillBtn = document.getElementById('fillFromProfileBtn');
+    if (fillBtn) {
+        fillBtn.addEventListener('click', async function () {
+            try {
+                const response = await fetch('/Account/GetPersonalData');
+                if (!response.ok) throw new Error('Ошибка загрузки профиля');
+                const data = await response.json();
+                window.profileData = data;
+                let confirmModal = new bootstrap.Modal(document.getElementById('confirmFillModal'));
+                confirmModal.show();
+            } catch (err) {
+                alert('Не удалось загрузить данные профиля');
+            }
+        });
+    }
+
+    document.getElementById('confirmFillBtn')?.addEventListener('click', function () {
+        if (window.profileData) {
+            fillFormWithProfileData(window.profileData);
+            window.profileData = null;
+        }
+        let modal = bootstrap.Modal.getInstance(document.getElementById('confirmFillModal'));
+        modal.hide();
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateStepIndicator(1);
+    });
+</script>

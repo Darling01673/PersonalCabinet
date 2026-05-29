@@ -1,0 +1,49 @@
+﻿@model List<PersonalCabinet.Models.User>
+@{
+    ViewData["Title"] = "Пользователи";
+}
+<div class="page-title"><i class="bi bi-people"></i> Пользователи</div>
+<div class="card-cabinet mb-4">
+    <div class="card-header">Поиск</div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-8"><label class="form-label-cabinet">Поиск (email, телефон)</label><input type="text" name="searchString" class="form-control-cabinet" value="@ViewBag.CurrentSearchString" /></div>
+            <div class="col-md-2 d-flex align-items-end"><button type="submit" class="btn-cabinet w-100">Найти</button></div>
+            <div class="col-md-2 d-flex align-items-end"><a href="@Url.Action("Users")" class="btn-cabinet-outline w-100">Сбросить</a></div>
+        </form>
+    </div>
+</div>
+<div class="card-cabinet">
+    <div class="card-header">Список пользователей</div>
+    <div class="card-body p-0">
+        @if (Model.Any())
+        {
+                <table class="table-cabinet">
+                    <thead><tr><th>ID</th><th>Email</th><th>Телефон</th><th>Тип</th><th>Роль</th><th>Действия</th></tr></thead>
+                    <tbody>
+                    @foreach (var u in Model)
+                    {
+                                <tr><td>@u.Id</td><td>@u.Email</td><td>@u.Phone</td><td>@u.UserType</td><td>@u.Role</td><td><a href="@Url.Action("UserDetails", new { id = u.Id })" class="btn-cabinet-outline btn-sm">Детали</a></td></tr>
+                    }
+                    </tbody>
+                </table>
+                <div class="pagination-container">
+                @for (int i = 1; i <= (int)Math.Ceiling((double)ViewBag.TotalCount / ViewBag.PageSize); i++)
+                {
+                    if (i == ViewBag.CurrentPage)
+                    {
+                                    <span class="btn-cabinet-outline btn-sm disabled">@i</span>
+                    }
+                    else
+                    {
+                                    <a href="@Url.Action("Users", new { page = i, searchString = ViewBag.CurrentSearchString })" class="btn-cabinet-outline btn-sm">@i</a>
+                    }
+                }
+                </div>
+        }
+        else
+        {
+            <div class="text-center p-5">Пользователи не найдены</div>
+        }
+    </div>
+</div>

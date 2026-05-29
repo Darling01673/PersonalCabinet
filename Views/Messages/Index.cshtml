@@ -1,0 +1,38 @@
+﻿@{
+    ViewData["Title"] = "Обращения";
+    var applications = ViewBag.Applications as IEnumerable<dynamic> ?? new List<dynamic>();
+}
+
+<div class="page-title"><i class="bi bi-chat-dots"></i> Обращения по заявкам</div>
+
+<div class="card-cabinet">
+    <div class="card-header">Заявки с сообщениями</div>
+    <div class="card-body">
+        @if (applications.Any())
+        {
+                <ul class="list-group">
+                @foreach (var app in applications)
+                {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Заявка №@app.ApplicationNumber</strong><br />
+                                    <small>@app.Title</small><br />
+                                    <small class="text-muted">Последнее сообщение: @(app.LastMessageDate?.ToString("dd.MM.yyyy HH:mm") ?? "—")</small>
+                            @if (app.UnreadCount > 0)
+                            {
+                                            <span class="badge bg-danger ms-2">@app.UnreadCount новых</span>
+                            }
+                                </div>
+                                <a href="/Application/Details/@app.Id" class="btn-cabinet-outline btn-sm">
+                                    <i class="bi bi-chat-text"></i> Перейти к переписке
+                                </a>
+                            </li>
+                }
+                </ul>
+        }
+        else
+        {
+                <p class="text-muted text-center">Нет сообщений.</p>
+        }
+    </div>
+</div>

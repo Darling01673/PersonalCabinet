@@ -1,0 +1,26 @@
+﻿.sort-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s;
+}
+
+    .sort-link:hover {
+        color: #1565c0;
+        text-decoration: underline;
+    }
+
+.pagination-container a,
+.pagination-container span {
+    display: inline-block;
+    margin: 0 3px;
+    min-width: 36px;
+    text-align: center;
+}
+
+.disabled {
+    cursor: default;
+    opacity: 0.6;
+}
