@@ -188,15 +188,17 @@ namespace PersonalCabinet.Controllers
         }
         public async Task<IActionResult> Messages()
         {
+            var currentUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
             var applications = await _context.Applications
-                .Include(a => a.Messages)
                 .Where(a => a.Messages.Any())
                 .Select(a => new
                 {
                     a.Id,
                     a.ApplicationNumber,
                     a.Title,
-                    LastMessageDate = a.Messages.Max(m => m.CreatedAt)
+                    LastMessageDate = a.Messages.Max(m => m.CreatedAt),
+                    UnreadCount = a.Messages.Count(m => (m.IsRead ?? false) == false && m.SenderId != currentUserId)
                 })
                 .OrderByDescending(a => a.LastMessageDate)
                 .ToListAsync();

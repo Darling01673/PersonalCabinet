@@ -10,25 +10,31 @@
     <div class="card-body">
         @if (applications.Any())
         {
-                <ul class="list-group">
+                    <ul class="list-group">
                 @foreach (var app in applications)
                 {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>Заявка №@app.ApplicationNumber</strong><br />
-                                    <small>@app.Title</small><br />
-                                    <small class="text-muted">Последнее сообщение: @(app.LastMessageDate?.ToString("dd.MM.yyyy HH:mm") ?? "—")</small>
-                                </div>
-                                <a href="/Admin/Details/@app.Id" class="btn-cabinet-outline btn-sm">
-                                    <i class="bi bi-chat-text"></i> Перейти к переписке
-                                </a>
-                            </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Заявка №@app.ApplicationNumber</strong><br />
+                                            <small>@app.Title</small><br />
+                                            <small class="text-muted">Последнее сообщение: @(app.LastMessageDate?.ToString("dd.MM.yyyy HH:mm") ?? "—")</small>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                            @if (app.UnreadCount > 0)
+                            {
+                                                        <span class="badge bg-danger rounded-pill">@app.UnreadCount</span>
+                            }
+                                            <a href="/Admin/Details/@app.Id" class="btn-cabinet-outline btn-sm">
+                                                <i class="bi bi-chat-text"></i> Перейти к переписке
+                                            </a>
+                                        </div>
+                                    </li>
                 }
-                </ul>
+                    </ul>
         }
         else
         {
-                <p class="text-muted text-center">Нет сообщений.</p>
+                    <p class="text-muted text-center">Нет сообщений.</p>
         }
     </div>
 </div>
