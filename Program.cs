@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using PersonalCabinet.Models;
 using PersonalCabinet.Services;
 
@@ -13,15 +15,37 @@ builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
 builder.Logging.AddFilter("Npgsql", LogLevel.Warning);
 builder.Logging.AddFilter("PersonalCabinet", LogLevel.Information);
 
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
-if (string.IsNullOrWhiteSpace(connectionString))
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+string connectionString;
+
+if (!string.IsNullOrWhiteSpace(databaseUrl))
 {
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    var databaseUri = new Uri(databaseUrl);
+
+    var userInfo = databaseUri.UserInfo.Split(':');
+
+    var csBuilder = new NpgsqlConnectionStringBuilder
+    {
+        Host = databaseUri.Host,
+        Port = databaseUri.Port,
+        Username = userInfo[0],
+        Password = userInfo[1],
+        Database = databaseUri.AbsolutePath.Trim('/'),
+        SslMode = SslMode.Disable
+    };
+
+    connectionString = csBuilder.ConnectionString;
 }
-if (string.IsNullOrWhiteSpace(connectionString))
+else
 {
-    throw new InvalidOperationException("Database connection string is not configured. Set DATABASE_URL environment variable or DefaultConnection in appsettings.json");
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException(
+            "Database connection string is not configured.");
 }
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo("/keys"));
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -30,7 +54,10 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto;
+
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
@@ -41,15 +68,16 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Account/Login";
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Home/AccessDenied";
+
         options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         options.Cookie.SameSite = SameSiteMode.Lax;
     });
 
 builder.Services.AddAntiforgery(options =>
 {
     options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
@@ -63,7 +91,9 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
+
 app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -72,3 +102,4 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
