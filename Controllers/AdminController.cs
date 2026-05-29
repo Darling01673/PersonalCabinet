@@ -210,11 +210,9 @@ namespace PersonalCabinet.Controllers
         public async Task<IActionResult> GetNewMessages(long id, long lastMessageId = 0)
         {
             var adminId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var application = await _context.Applications.FindAsync(id);
-            if (application == null) return NotFound();
 
             var newMessages = await _context.Messages
-                .Where(m => m.ApplicationId == id && m.Id > lastMessageId)
+                .Where(m => m.ApplicationId == id && m.Id > lastMessageId && m.SenderId != adminId) 
                 .Include(m => m.Sender)
                     .ThenInclude(s => s.IndividualProfile)
                 .Include(m => m.Sender)
@@ -222,7 +220,7 @@ namespace PersonalCabinet.Controllers
                 .OrderBy(m => m.CreatedAt)
                 .ToListAsync();
 
-            foreach (var msg in newMessages.Where(m => m.SenderId != adminId && (m.IsRead ?? false) == false))
+            foreach (var msg in newMessages.Where(m => (m.IsRead ?? false) == false))
             {
                 msg.IsRead = true;
             }
@@ -234,7 +232,7 @@ namespace PersonalCabinet.Controllers
                 m.Message1,
                 m.CreatedAt,
                 SenderName = GetSenderName(m.Sender),
-                IsOwn = m.SenderId == adminId
+                IsOwn = false
             });
 
             return Ok(result);

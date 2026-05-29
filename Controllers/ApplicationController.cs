@@ -486,19 +486,13 @@ namespace PersonalCabinet.Controllers
             var userId = GetCurrentUserId();
             if (userId == null) return Unauthorized();
 
-            var application = await _context.Applications.FindAsync(id);
-            if (application == null || application.UserId != userId) return NotFound();
-
             var newMessages = await _context.Messages
-                .Where(m => m.ApplicationId == id && m.Id > lastMessageId)
+                .Where(m => m.ApplicationId == id && m.Id > lastMessageId && m.SenderId != userId)
                 .Include(m => m.Sender)
-                    .ThenInclude(s => s.IndividualProfile)
-                .Include(m => m.Sender)
-                    .ThenInclude(s => s.OrganizationProfile)
                 .OrderBy(m => m.CreatedAt)
                 .ToListAsync();
 
-            foreach (var msg in newMessages.Where(m => m.SenderId != userId && (m.IsRead ?? false) == false))
+            foreach (var msg in newMessages.Where(m => (m.IsRead ?? false) == false))
             {
                 msg.IsRead = true;
             }
@@ -510,7 +504,7 @@ namespace PersonalCabinet.Controllers
                 m.Message1,
                 m.CreatedAt,
                 SenderName = GetSenderName(m.Sender),
-                IsOwn = m.SenderId == userId
+                IsOwn = false
             });
 
             return Ok(result);
