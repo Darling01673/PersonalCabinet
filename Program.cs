@@ -14,9 +14,13 @@ builder.Logging.AddFilter("Npgsql", LogLevel.Warning);
 builder.Logging.AddFilter("PersonalCabinet", LogLevel.Information);
 
 var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
-if (string.IsNullOrEmpty(connectionString))
+if (string.IsNullOrWhiteSpace(connectionString))
 {
     connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+}
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Database connection string is not configured. Set DATABASE_URL environment variable or DefaultConnection in appsettings.json");
 }
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
