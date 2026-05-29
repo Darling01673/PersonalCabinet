@@ -179,18 +179,22 @@
         const chatText = document.getElementById('chat-text');
         const messagesContainer = document.getElementById('chat-messages');
 
+        let lastMessageId = @(Model.Messages.Any() ? Model.Messages.Max(m => m.Id) : 0);
         function openChat() {
             chatWindow.style.display = 'flex';
             toggleBtn.style.display = 'none';
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            scrollToBottom();
         }
         function closeChat() {
             chatWindow.style.display = 'none';
             toggleBtn.style.display = 'flex';
         }
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
         toggleBtn.addEventListener('click', openChat);
         closeBtn.addEventListener('click', closeChat);
-
         chatForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const text = chatText.value.trim();
@@ -214,12 +218,43 @@
                 messageDiv.innerHTML = `<p>${escapeHtml(text)}</p><small>Вы · ${timeStr}</small>`;
                 messagesContainer.appendChild(messageDiv);
                 chatText.value = '';
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                scrollToBottom();
             }
         });
+        async function fetchNewMessages() {
+            try {
+                const response = await fetch(`/Application/GetNewMessages?id=@Model.Id&lastMessageId=${lastMessageId}`);
+                if (!response.ok) throw new Error('Ошибка загрузки');
+                const messages = await response.json();
+                if (messages.length === 0) return;
+
+                const isChatOpen = chatWindow.style.display === 'flex';
+                for (const msg of messages) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `chat-message ${msg.isOwn ? 'user' : 'operator'}`;
+                    const date = new Date(msg.createdAt);
+                    const timeStr = date.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    messageDiv.innerHTML = `<p>${escapeHtml(msg.message1)}</p><small>${escapeHtml(msg.senderName)} · ${timeStr}</small>`;
+                    messagesContainer.appendChild(messageDiv);
+                    lastMessageId = msg.id;
+                }
+                if (isChatOpen) {
+                    scrollToBottom();
+                } else {
+                    if (messages.some(m => !m.isOwn)) {
+                        toggleBtn.classList.add('has-new');
+                        setTimeout(() => toggleBtn.classList.remove('has-new'), 5000);
+                    }
+                }
+            } catch (err) {
+                console.error('Polling error:', err);
+            }
+        }
+        setInterval(fetchNewMessages, 3000);
 
         function escapeHtml(str) {
-            return str.replace(/[&<>]/g, function (m) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
                 if (m === '&') return '&amp;';
                 if (m === '<') return '&lt;';
                 if (m === '>') return '&gt;';

@@ -206,5 +206,47 @@ namespace PersonalCabinet.Controllers
             ViewBag.Applications = applications;
             return View();
         }
+        [HttpGet]
+        public async Task<IActionResult> GetNewMessages(long id, long lastMessageId = 0)
+        {
+            var adminId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var application = await _context.Applications.FindAsync(id);
+            if (application == null) return NotFound();
+
+            var newMessages = await _context.Messages
+                .Where(m => m.ApplicationId == id && m.Id > lastMessageId)
+                .Include(m => m.Sender)
+                    .ThenInclude(s => s.IndividualProfile)
+                .Include(m => m.Sender)
+                    .ThenInclude(s => s.OrganizationProfile)
+                .OrderBy(m => m.CreatedAt)
+                .ToListAsync();
+
+            foreach (var msg in newMessages.Where(m => m.SenderId != adminId && (m.IsRead ?? false) == false))
+            {
+                msg.IsRead = true;
+            }
+            await _context.SaveChangesAsync();
+
+            var result = newMessages.Select(m => new
+            {
+                m.Id,
+                m.Message1,
+                m.CreatedAt,
+                SenderName = GetSenderName(m.Sender),
+                IsOwn = m.SenderId == adminId
+            });
+
+            return Ok(result);
+        }
+        private string GetSenderName(User sender)
+        {
+            if (sender.Role == "Admin") return "Оператор";
+            if (sender.UserType == "INDIVIDUAL" && sender.IndividualProfile != null)
+                return $"{sender.IndividualProfile.LastName} {sender.IndividualProfile.FirstName} {sender.IndividualProfile.MiddleName}".Trim();
+            if (sender.UserType == "ORGANIZATION" && sender.OrganizationProfile != null)
+                return sender.OrganizationProfile.ShortName ?? sender.OrganizationProfile.FullName ?? sender.Email;
+            return sender.Email;
+        }
     }
 }

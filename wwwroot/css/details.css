@@ -147,3 +147,23 @@
         transform: scale(1.05);
         background: #0d3b6e;
     }
+    #chat-toggle.has-new {
+        animation: pulse 1s infinite;
+    }
+
+@keyframes pulse {
+    0% {
+        background-color: #ff4444;
+        transform: scale(1);
+    }
+
+    50% {
+        background-color: #cc0000;
+        transform: scale(1.1);
+    }
+
+    100% {
+        background-color: #ff4444;
+        transform: scale(1);
+    }
+}
