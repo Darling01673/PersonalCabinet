@@ -35,6 +35,10 @@ namespace PersonalCabinet.Controllers
             {
                 ModelState.AddModelError("Password", "Поле Пароль обязательно");
             }
+            if (string.IsNullOrWhiteSpace(model.Email))
+            {
+                ModelState.AddModelError("Email", "Поле Email обязательно");
+            }
             string consent = Request.Form["PersonalDataConsent"];
             if (consent != "true" && consent != "on" && consent != "True")
             {
