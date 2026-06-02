@@ -20,9 +20,14 @@
             <p>Создайте учётную запись для подачи заявок</p>
         </div>
 
-            @if (ViewBag.Error != null)
+            @if (!ViewContext.ModelState.IsValid)
             {
-                <div class="alert error">@Html.Raw(ViewBag.Error)</div>
+        <div class="alert error">
+                    @foreach (var error in ViewContext.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                    <p>@error.ErrorMessage</p>
+                    }
+        </div>
             }
 
         <form method="post" asp-action="Register" id="regForm">
