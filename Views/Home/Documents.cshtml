@@ -1,22 +1,28 @@
 ﻿@{
+    Layout = null;
     ViewData["Title"] = "Типовые документы";
 }
-<link rel="stylesheet" href="/css/home-index.css" />
-
-<div class="container">
-    <div class="hero">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>АО «ГНЦ НИИАР» — Типовые документы</title>
+    <link rel="stylesheet" href="/css/home-index.css" />
+</head>
+<body>
+<div class="home-page">
+    <header class="home-hero">
         <h1>АО «ГНЦ НИИАР»</h1>
-        <p>Технологическое присоединение к электрическим сетям</p>
-        <div class="btn-group">
-            <a href="/Account/Login" class="btn btn-outline">Войти в кабинет</a>
-        </div>
-    </div>
+        <p>Портал технологического присоединения к электрическим сетям</p>
+        <a href="/Account/Login" class="btn-login">Войти в личный кабинет</a>
+    </header>
 
-    <div class="two-columns">
-        <div class="menu-column">
-            <div class="menu-panel">
-                <h2>Потребителю</h2>
-                <ul class="menu-list">
+    <div class="home-layout">
+        <aside class="home-sidebar">
+            <div class="home-sidebar-card">
+                <h3>Потребителю</h3>
+                <ul class="home-menu">
                     <li><a href="/Home/Index">Главная</a></li>
                     <li><a href="/Home/Instruction">Инструкция для пользователя</a></li>
                     <li><a href="/Home/About">О компании</a></li>
@@ -25,172 +31,72 @@
                     <li><a href="/Home/Documents" class="active">Типовые документы</a></li>
                 </ul>
             </div>
-        </div>
+        </aside>
 
-        <div class="content-column">
-            <div class="card">
+        <main class="home-content">
+            <section class="home-card">
                 <h2>Типовые документы</h2>
-                <div class="company-text">
-                    <p>
-                        Ниже представлены шаблоны и типовые формы документов, необходимых
-                        для оформления технологического присоединения к электрическим сетям
-                        АО «ГНЦ НИИАР». Скачайте нужный файл, заполните и приложите к заявке.
-                    </p>
-                </div>
-            </div>
+                <p>Ниже представлены шаблоны и типовые формы документов, необходимых для оформления технологического присоединения к электрическим сетям АО «ГНЦ НИИАР». Скачайте нужный файл, заполните и приложите к заявке.</p>
+            </section>
 
-            <div class="card">
+            <section class="home-card">
                 <h2>Заявки на технологическое присоединение</h2>
-                <div class="company-text">
-                    <ul>
-                        <li>
-                            <a href="/docs/zayavka_fl_do_15.docx" download>
-                                📄 Заявка на ТП для физических лиц (мощность до 15 кВт)
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/zayavka_fl_do_150.docx" download>
-                                📄 Заявка на ТП для физических лиц (мощность от 15 до 150 кВт)
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/zayavka_ul_do_150.docx" download>
-                                📄 Заявка на ТП для юридических лиц (мощность до 150 кВт)
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/zayavka_ul_svyshe_150.docx" download>
-                                📄 Заявка на ТП для юридических лиц (мощность свыше 150 кВт)
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/zayavka_ip.docx" download>
-                                📄 Заявка на ТП для индивидуальных предпринимателей
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+                <ul>
+                    <li><a href="/docs/zayavka_fl_do_15.docx" download>📄 Заявка на ТП для физических лиц (мощность до 15 кВт)</a></li>
+                    <li><a href="/docs/zayavka_fl_do_150.docx" download>📄 Заявка на ТП для физических лиц (мощность от 15 до 150 кВт)</a></li>
+                    <li><a href="/docs/zayavka_ul_do_150.docx" download>📄 Заявка на ТП для юридических лиц (мощность до 150 кВт)</a></li>
+                    <li><a href="/docs/zayavka_ul_svyshe_150.docx" download>📄 Заявка на ТП для юридических лиц (мощность свыше 150 кВт)</a></li>
+                    <li><a href="/docs/zayavka_ip.docx" download>📄 Заявка на ТП для индивидуальных предпринимателей</a></li>
+                </ul>
+            </section>
 
-            <div class="card">
+            <section class="home-card">
                 <h2>Договоры</h2>
-                <div class="company-text">
-                    <ul>
-                        <li>
-                            <a href="/docs/dogovor_tp_fl.pdf" download>
-                                📄 Типовой договор об осуществлении ТП (физические лица, до 15 кВт)
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/dogovor_tp_ul.pdf" download>
-                                📄 Типовой договор об осуществлении ТП (юридические лица)
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/dogovor_energosnabzhenie.pdf" download>
-                                📄 Типовой договор энергоснабжения
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+                <ul>
+                    <li><a href="/docs/dogovor_tp_fl.pdf" download>📄 Типовой договор об осуществлении ТП (физические лица, до 15 кВт)</a></li>
+                    <li><a href="/docs/dogovor_tp_ul.pdf" download>📄 Типовой договор об осуществлении ТП (юридические лица)</a></li>
+                    <li><a href="/docs/dogovor_energosnabzhenie.pdf" download>📄 Типовой договор энергоснабжения</a></li>
+                </ul>
+            </section>
 
-            <div class="card">
+            <section class="home-card">
                 <h2>Технические условия</h2>
-                <div class="company-text">
-                    <ul>
-                        <li>
-                            <a href="/docs/tu_template_fl.pdf" download>
-                                📄 Шаблон технических условий (физические лица)
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/tu_template_ul.pdf" download>
-                                📄 Шаблон технических условий (юридические лица)
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+                <ul>
+                    <li><a href="/docs/tu_template_fl.pdf" download>📄 Шаблон технических условий (физические лица)</a></li>
+                    <li><a href="/docs/tu_template_ul.pdf" download>📄 Шаблон технических условий (юридические лица)</a></li>
+                </ul>
+            </section>
 
-            <div class="card">
+            <section class="home-card">
                 <h2>Акты</h2>
-                <div class="company-text">
-                    <ul>
-                        <li>
-                            <a href="/docs/akt_tp.pdf" download>
-                                📄 Акт о технологическом присоединении
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/akt_razgranicheniya.pdf" download>
-                                📄 Акт разграничения балансовой принадлежности
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/akt_razgranicheniya_otv.pdf" download>
-                                📄 Акт разграничения эксплуатационной ответственности
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/akt_vypolneniya_tu.pdf" download>
-                                📄 Акт о выполнении технических условий
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/akt_dopuska_pribora_ucheta.pdf" download>
-                                📄 Акт допуска прибора учёта в эксплуатацию
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+                <ul>
+                    <li><a href="/docs/akt_tp.pdf" download>📄 Акт о технологическом присоединении</a></li>
+                    <li><a href="/docs/akt_razgranicheniya.pdf" download>📄 Акт разграничения балансовой принадлежности</a></li>
+                    <li><a href="/docs/akt_razgranicheniya_otv.pdf" download>📄 Акт разграничения эксплуатационной ответственности</a></li>
+                    <li><a href="/docs/akt_vypolneniya_tu.pdf" download>📄 Акт о выполнении технических условий</a></li>
+                    <li><a href="/docs/akt_dopuska_pribora_ucheta.pdf" download>📄 Акт допуска прибора учёта в эксплуатацию</a></li>
+                </ul>
+            </section>
 
-            <div class="card">
+            <section class="home-card">
                 <h2>Нормативные документы</h2>
-                <div class="company-text">
-                    <ul>
-                        <li>
-                            <a href="/docs/pp_861.pdf" download>
-                                📄 Постановление Правительства РФ от 27.12.2004 № 861 (Правила технологического присоединения)
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/fz_35.pdf" download>
-                                📄 Федеральный закон от 26.03.2003 № 35-ФЗ «Об электроэнергетике»
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/pp_442.pdf" download>
-                                📄 Постановление Правительства РФ от 04.05.2012 № 442 (Правила функционирования розничных рынков электрической энергии)
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+                <ul>
+                    <li><a href="/docs/pp_861.pdf" download>📄 Постановление Правительства РФ от 27.12.2004 № 861 (Правила технологического присоединения)</a></li>
+                    <li><a href="/docs/fz_35.pdf" download>📄 Федеральный закон от 26.03.2003 № 35-ФЗ «Об электроэнергетике»</a></li>
+                    <li><a href="/docs/pp_442.pdf" download>📄 Постановление Правительства РФ от 04.05.2012 № 442 (Правила функционирования розничных рынков электрической энергии)</a></li>
+                </ul>
+            </section>
 
-            <div class="card">
+            <section class="home-card">
                 <h2>Прочие документы</h2>
-                <div class="company-text">
-                    <ul>
-                        <li>
-                            <a href="/docs/doverennost_template.docx" download>
-                                📄 Шаблон доверенности на представителя
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/soglasie_na_obrabotku_pd.pdf" download>
-                                📄 Согласие на обработку персональных данных
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/docs/instrukciya_zapolneniya.pdf" download>
-                                📄 Инструкция по заполнению заявки (PDF)
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+                <ul>
+                    <li><a href="/docs/doverennost_template.docx" download>📄 Шаблон доверенности на представителя</a></li>
+                    <li><a href="/docs/soglasie_na_obrabotku_pd.pdf" download>📄 Согласие на обработку персональных данных</a></li>
+                    <li><a href="/docs/instrukciya_zapolneniya.pdf" download>📄 Инструкция по заполнению заявки (PDF)</a></li>
+                </ul>
+            </section>
+        </main>
     </div>
 </div>
+</body>
+</html>

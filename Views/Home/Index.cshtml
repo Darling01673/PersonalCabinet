@@ -1,100 +1,209 @@
 ﻿@{
+    Layout = null;
     ViewData["Title"] = "Главная";
 }
-<link rel="stylesheet" href="/css/home-index.css" />
 
-<div class="container">
-    <div class="hero">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>АО «ГНЦ НИИАР»</title>
+
+    <link rel="stylesheet" href="/css/home-index.css" />
+</head>
+<body>
+
+<div class="home-page">
+
+    <header class="home-hero">
+
         <h1>АО «ГНЦ НИИАР»</h1>
-        <p>Технологическое присоединение к электрическим сетям</p>
-        <div class="btn-group">
-            <a href="/Account/Login" class="btn btn-outline">Войти в кабинет</a>
-        </div>
-    </div>
 
-    <div class="two-columns">
-        <div class="menu-column">
-            <div class="menu-panel">
-                <h2>Потребителю</h2>
-                <ul class="menu-list">
-                    <li><a href="/Home/Index" class="active">Главная</a></li>
-                    <li><a href="/Home/Instruction">Инструкция для пользователя</a></li>
-                    <li><a href="/Home/About">О компании</a></li>
-                    <li><a href="/Home/Faq">Часто задаваемые вопросы</a></li>
-                    <li><a href="/Home/Contacts">Контактная информация</a></li>
-                    <li><a href="/Home/Documents">Типовые документы</a></li>
+        <p>
+            Портал технологического присоединения
+            к электрическим сетям
+        </p>
+
+        <a href="/Account/Login" class="btn-login">
+            Войти в личный кабинет
+        </a>
+
+    </header>
+
+    <div class="home-layout">
+
+        <aside class="home-sidebar">
+
+            <div class="home-sidebar-card">
+
+                <h3>Потребителю</h3>
+
+                <ul class="home-menu">
+
+                    <li>
+                        <a href="/Home/Index" class="active">
+                            Главная
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/Home/Instruction">
+                            Инструкция для пользователя
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/Home/About">
+                            О компании
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/Home/Faq">
+                            Часто задаваемые вопросы
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/Home/Contacts">
+                            Контактная информация
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/Home/Documents">
+                            Типовые документы
+                        </a>
+                    </li>
+
                 </ul>
+
             </div>
-        </div>
 
-        <div class="content-column">
+        </aside>
 
-            <div class="card info-card">
+        <main class="home-content">
+
+            <section class="home-card">
+
                 <h2>Главная страница</h2>
-                <h4>Добро пожаловать на единый портал технологического присоединения</h4>
-                <div class="welcome-text">
-                    <p class="lead-text">
-                        Интерактивный портал АО «ГНЦ НИИАР» создан в рамках программы цифровизации услуг и повышения доступности энергетической инфраструктуры для потребителей города Димитровграда Ульяновской области.
-                    </p>
-                    <p>
-                        Использование Личного кабинета позволяет полностью исключить необходимость личного визита в офис компании.
-                        Теперь вы можете подать заявку, отслеживать этапы ее рассмотрения, получать и подписывать договоры,
-                        технические условия и акты в любое удобное время, находясь дома или в офисе.
-                    </p>
+
+                <p class="lead">
+                    Добро пожаловать на единый портал технологического
+                    присоединения АО «ГНЦ НИИАР».
+                </p>
+
+                <p>
+                    Интерактивный портал создан для предоставления услуг
+                    технологического присоединения в электронном виде.
+                </p>
+
+                <p>
+                    Использование личного кабинета позволяет полностью
+                    исключить необходимость посещения офиса компании.
+                </p>
+
+            </section>
+
+            <section class="home-card">
+
+                <h2>Категории заявителей</h2>
+
+                <div class="info-grid">
+
+                    <div class="info-item">
+                        <h4>Физические лица</h4>
+                        <p>
+                            Подключение домов, дач и гаражей
+                            до 15 кВт.
+                        </p>
+                    </div>
+
+                    <div class="info-item">
+                        <h4>Малый и средний бизнес</h4>
+                        <p>
+                            Юридические лица и ИП
+                            до 150 кВт.
+                        </p>
+                    </div>
+
+                    <div class="info-item">
+                        <h4>Крупные предприятия</h4>
+                        <p>
+                            Индивидуальные проекты
+                            свыше 150 кВт.
+                        </p>
+                    </div>
+
                 </div>
 
-                <div class="info-section">
-                    <h3>Комплексный подход к технологическому присоединению</h3>
-                    <p class="section-desc">
-                        Присоединение к электрическим сетям АО «ГНЦ НИИАР» осуществляется на основании публичного договора
-                        и регулируется строгими стандартами законодательства РФ. Мы работаем со всеми категориями заявителей:
-                    </p>
-                    <ul class="styled-list">
-                        <li>
-                            <span class="list-title">Физические лица</span> — подключение жилых домов, дач или гаражей с мощностью до 15 кВт включительно.
-                        </li>
-                        <li>
-                            <span class="list-title">Малый и средний бизнес</span> — индивидуальные предприниматели и юридические лица с запрашиваемой мощностью до 150 кВт.
-                        </li>
-                        <li>
-                            <span class="list-title">Крупные предприятия</span> — заявители с мощностью свыше 150 кВт и индивидуальным проектированием схем энергоснабжения.
-                        </li>
-                    </ul>
+            </section>
+
+            <section class="home-card">
+
+                <h2>Преимущества личного кабинета</h2>
+
+                <div class="advantages-grid">
+
+                    <div class="advantage">
+                        <h4>Онлайн подача</h4>
+                        <p>
+                            Подача заявки без посещения офиса.
+                        </p>
+                    </div>
+
+                    <div class="advantage">
+                        <h4>Контроль статуса</h4>
+                        <p>
+                            Все этапы отображаются в личном кабинете.
+                        </p>
+                    </div>
+
+                    <div class="advantage">
+                        <h4>Электронные документы</h4>
+                        <p>
+                            Получение и подписание документов онлайн.
+                        </p>
+                    </div>
+
                 </div>
 
-                <div class="info-section">
-                    <h3>Преимущества работы через личный кабинет</h3>
-                    <p class="section-desc">
-                        Использование цифровых сервисов упрощает процесс подачи заявки и делает его максимально прозрачным для заявителя:
-                    </p>
-                    <ul class="styled-list">
-                        <li>
-                            <span class="list-title">Подача в один клик</span> — интуитивно понятный интерфейс системы сам сформирует пакет документов на основе введенных вами данных.
-                        </li>
-                        <li>
-                            <span class="list-title">Прозрачный контроль</span> — в профиле отображается актуальный статус: от проверки инженером до строительно-монтажных работ.
-                        </li>
-                        <li>
-                            <span class="list-title">Прямая связь</span> — задавайте вопросы куратору вашей заявки и получайте технические консультации прямо в кабинете.
-                        </li>
-                    </ul>
-                </div>
-            </div>
+            </section>
 
+            <section class="home-card">
 
+                <h2>Контактная информация</h2>
 
+                <div class="contacts">
 
-
-            <div class="card">
-                <h2>Контакты</h2>
-                <div class="contact-info">
                     <strong>АО «ГНЦ НИИАР»</strong>
-                    433510, Ульяновская область, г. Димитровград, Западное шоссе, д. 9.<br />
-                    E-mail: <a href="mailto:niiar@niiar.ru">niiar@niiar.ru</a><br />
-                    Тел.: 8 (84235) 9-83-83<br />
-                    Факс: 8 (84235) 9-83-84
+
+                    <p>
+                        433510, Ульяновская область,
+                        г. Димитровград,
+                        Западное шоссе, д. 9
+                    </p>
+
+                    <p>
+                        E-mail:
+                        <a href="mailto:niiar@niiar.ru">
+                            niiar@niiar.ru
+                        </a>
+                    </p>
+
+                    <p>Тел.: 8 (84235) 9-83-83</p>
+                    <p>Факс: 8 (84235) 9-83-84</p>
+
                 </div>
-            </div>
-        </div>
+
+            </section>
+
+        </main>
+
     </div>
+
 </div>
+
+</body>
+</html>

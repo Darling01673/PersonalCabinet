@@ -2,16 +2,20 @@
 @{
     ViewData["Title"] = "Управление заявками";
 }
-<div class="page-title"><i class="bi bi-file-earmark-text"></i> Все заявки</div>
+<link rel="stylesheet" href="/css/index.css" />
 
-<div class="card-cabinet mb-4">
-    <div class="card-header">Фильтрация</div>
-    <div class="card-body">
+<div class="page">
+    <div class="header">
+        <h1><i class="bi bi-file-earmark-text"></i> Все заявки</h1>
+    </div>
+
+    <div class="card">
+        <h2>Фильтрация заявок</h2>
         <form method="get" class="row g-3">
             <div class="col-md-3">
-                <label class="form-label-cabinet">Статус</label>
-               <select name="statusFilter" class="form-control-cabinet">
-    <option value="">Все</option>
+                <label class="form-label">Статус</label>
+                <select name="statusFilter" class="form-control">
+                    <option value="">Все</option>
                     @foreach (var status in new[] { "Submitted", "InReview", "Approved", "Rejected", "Completed" })
                     {
                         string displayName = status switch
@@ -23,82 +27,105 @@
                             "Completed" => "Завершена",
                             _ => status
                         };
-            <option value="@status" selected="@(ViewBag.CurrentStatusFilter == status)">@displayName</option>
+                            <option value="@status" selected="@(ViewBag.CurrentStatusFilter == status)">@displayName</option>
                     }
-</select>
+                </select>
             </div>
             <div class="col-md-5">
-                <label class="form-label-cabinet">Поиск (№, название, адрес, email)</label>
-                <input type="text" name="searchString" class="form-control-cabinet" value="@ViewBag.CurrentSearchString" />
+                <label class="form-label">Поиск </label>
+                <input type="text" name="searchString" class="form-control" value="@ViewBag.CurrentSearchString" placeholder="Введите текст..." />
             </div>
-            <div class="col-md-2 d-flex align-items-end"><button type="submit" class="btn-cabinet w-100">Применить</button></div>
-            <div class="col-md-2 d-flex align-items-end"><a href="@Url.Action("Index")" class="btn-cabinet-outline w-100">Сбросить</a></div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn-create w-100">Применить</button>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <a href="@Url.Action("Index")" class="btn-link-all w-100">Сбросить</a>
+            </div>
         </form>
     </div>
-</div>
 
-<div class="card-cabinet">
-    <div class="card-header">Список заявок</div>
-    <div class="card-body p-0">
+    <div class="card">
+        <h2>Список заявок</h2>
         @if (Model.Any())
         {
-                <table class="table-cabinet">
-                    <thead>
-                        <tr>
-                            <th><a href="@Url.Action("Index", new { sortOrder = ViewBag.NumberSortParam })">№ заявки ⇅</a></th>
-                            <th>Название</th>
-                            <th>Заявитель</th>
-                            <th>Дата создания</th>
-                            <th><a href="@Url.Action("Index", new { sortOrder = ViewBag.StatusSortParam })">Статус ⇅</a></th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    @foreach (var app in Model)
-                    {
-                                <tr>
-                                    <td>@app.ApplicationNumber</td>
-                                    <td>@app.Title</td>
-                                    <td>@app.User.Email</td>
-                                    <td>@app.CreatedAt?.ToString("dd.MM.yyyy")</td>
-                                    <td>
-                                @{
-                                    string statusRu = app.Status switch
-                                    {
-                                        "Submitted" => "Подана",
-                                        "InReview" => "На рассмотрении",
-                                        "Approved" => "Одобрена",
-                                        "Rejected" => "Отклонена",
-                                        "Completed" => "Завершена",
-                                        _ => app.Status
-                                    };
-                                }
-                                        <span class="badge-status badge-@(app.Status.ToLower())">@statusRu</span>
-                                     </td>
-                                    <td>
-                                        <a href="@Url.Action("Details", new { id = app.Id })" class="btn-cabinet-outline btn-sm">Просмотр</a>
-                                     </td>
-                                </tr>
-                    }
-                    </tbody>
-                </table>
-                <div class="pagination-container">
-                @for (int i = 1; i <= (int)Math.Ceiling((double)ViewBag.TotalCount / ViewBag.PageSize); i++)
-                {
-                    if (i == ViewBag.CurrentPage)
-                    {
-                                    <span class="btn-cabinet-outline btn-sm disabled">@i</span>
-                    }
-                    else
-                    {
-                                    <a href="@Url.Action("Index", new { page = i, statusFilter = ViewBag.CurrentStatusFilter, searchString = ViewBag.CurrentSearchString, sortOrder = ViewBag.CurrentSort })" class="btn-cabinet-outline btn-sm">@i</a>
-                    }
-                }
+                <div class="table-responsive">
+                    <table class="app-table">
+                        <thead>
+                            <tr>
+                                <th><a href="@Url.Action("Index", new { sortOrder = ViewBag.NumberSortParam, statusFilter = ViewBag.CurrentStatusFilter, searchString = ViewBag.CurrentSearchString })" class="sort-link">№ заявки ⇅</a></th>
+                                <th>Название</th>
+                                <th>Заявитель</th>
+                                <th><a href="@Url.Action("Index", new { sortOrder = ViewBag.DateSortParam, statusFilter = ViewBag.CurrentStatusFilter, searchString = ViewBag.CurrentSearchString })" class="sort-link">Дата создания ⇅</a></th>
+                                <th><a href="@Url.Action("Index", new { sortOrder = ViewBag.StatusSortParam, statusFilter = ViewBag.CurrentStatusFilter, searchString = ViewBag.CurrentSearchString })" class="sort-link">Статус ⇅</a></th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var app in Model)
+                        {
+                                    <tr>
+                                        <td>@app.ApplicationNumber</td>
+                                        <td>@app.Title</td>
+                                        <td>@app.User.Email</td>
+                                        <td>@app.CreatedAt?.ToString("dd.MM.yyyy")</td>
+                                        <td>
+                                    @{
+                                        string statusRu = app.Status switch
+                                        {
+                                            "Submitted" => "Подана",
+                                            "InReview" => "На рассмотрении",
+                                            "Approved" => "Одобрена",
+                                            "Rejected" => "Отклонена",
+                                            "Completed" => "Завершена",
+                                            _ => app.Status
+                                        };
+                                        string badgeClass = app.Status switch
+                                        {
+                                            "Submitted" => "badge-yellow",
+                                            "InReview" => "badge-blue",
+                                            "Approved" => "badge-green",
+                                            "Rejected" => "badge-red",
+                                            "Completed" => "badge-green",
+                                            _ => "badge-gray"
+                                        };
+                                    }
+                                            <span class="badge @badgeClass">@statusRu</span>
+                                        </td>
+                                        <td>
+                                            <a href="@Url.Action("Details", new { id = app.Id })" class="btn-small"><i class="bi bi-eye"></i> Просмотр</a>
+                                        </td>
+                                    </tr>
+                        }
+                        </tbody>
+                    </table>
                 </div>
+
+            @if (ViewBag.TotalCount > ViewBag.PageSize)
+            {
+                        <div class="text-right" style="margin-top: 20px;">
+                    @{
+                        int totalPages = (int)Math.Ceiling((double)ViewBag.TotalCount / ViewBag.PageSize);
+                        for (int i = 1; i <= totalPages; i++)
+                        {
+                            if (i == ViewBag.CurrentPage)
+                            {
+                                                    <span class="btn-small disabled">@i</span>
+                            }
+                            else
+                            {
+                                                    <a href="@Url.Action("Index", new { page = i, statusFilter = ViewBag.CurrentStatusFilter, searchString = ViewBag.CurrentSearchString, sortOrder = ViewBag.CurrentSort })" class="btn-small">@i</a>
+                            }
+                        }
+                    }
+                        </div>
+            }
         }
         else
         {
-                <div class="text-center p-5">Заявок нет</div>
+                <div class="empty">
+                    <i class="bi bi-inbox"></i>
+                    <p>Заявок нет</p>
+                </div>
         }
     </div>
 </div>

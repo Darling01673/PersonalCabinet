@@ -1,12 +1,49 @@
 ﻿@{
+    Layout = null;
     ViewData["Title"] = "Доступ запрещён";
 }
-<div class="page-title">
-    <i class="bi bi-shield-exclamation"></i> Доступ запрещён
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>АО «ГНЦ НИИАР» — Доступ запрещён</title>
+    <link rel="stylesheet" href="/css/home-index.css" />
+</head>
+<body>
+<div class="home-page">
+    <header class="home-hero">
+        <h1>АО «ГНЦ НИИАР»</h1>
+        <p>Портал технологического присоединения к электрическим сетям</p>
+        <a href="/Account/Login" class="btn-login">Войти в личный кабинет</a>
+    </header>
+
+    <div class="home-layout">
+        <aside class="home-sidebar">
+            <div class="home-sidebar-card">
+                <h3>Потребителю</h3>
+                <ul class="home-menu">
+                    <li><a href="/Home/Index">Главная</a></li>
+                    <li><a href="/Home/Instruction">Инструкция для пользователя</a></li>
+                    <li><a href="/Home/About">О компании</a></li>
+                    <li><a href="/Home/Faq">Часто задаваемые вопросы</a></li>
+                    <li><a href="/Home/Contacts">Контактная информация</a></li>
+                    <li><a href="/Home/Documents">Типовые документы</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="home-content">
+            <section class="home-card" style="text-align: center;">
+                <h2>Доступ запрещён</h2>
+                <p style="font-size: 18px; margin: 20px 0;">У вас нет прав для просмотра этой страницы.</p>
+                <p>Обратитесь к администратору портала для получения доступа.</p>
+                <p style="margin-top: 25px;">
+                    <a href="/Home/Index" class="btn-login" style="display: inline-block; background: #6c757d;">Вернуться на главную</a>
+                </p>
+            </section>
+        </main>
+    </div>
 </div>
-<div class="card-cabinet text-center p-5">
-    <i class="bi bi-exclamation-triangle-fill" style="font-size: 64px; color: #dc3545;"></i>
-    <h3 class="mt-3">У вас нет прав для просмотра этой страницы.</h3>
-    <p>Обратитесь к администратору для получения доступа.</p>
-    <a href="/Home/MainMenu" class="btn-cabinet">Вернуться на главную</a>
-</div>
+</body>
+</html>

@@ -12,6 +12,8 @@
 
     @if (User.Identity.IsAuthenticated)
     {
+        var userName = User.Identity.Name ?? "Пользователь";
+
         <header class="top-navbar">
             <div class="top-navbar__left">
                 <a href="/Home/Index" class="top-navbar__logo">
@@ -23,7 +25,7 @@
                 <div class="top-navbar__profile dropdown">
                     <a href="#" class="nav-icon-btn dropdown-toggle" data-bs-toggle="dropdown" title="Профиль">
                         <i class="bi bi-person-circle"></i>
-                        <span class="profile-name">@(ViewData["UserName"] ?? "Профиль")</span>
+                        <span class="profile-name">@userName</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="/Account/Profile"><i class="bi bi-person me-2"></i>Мой профиль</a></li>
@@ -40,6 +42,7 @@
                     <ul class="sidebar__menu">
                         @if (User.IsInRole("Admin"))
                         {
+                                <li class="sidebar__item"><a href="/Admin/MainMenuAdmin" class="sidebar__link"><i class="bi bi-grid"></i><span>Главная</span></a></li>
                                 <li class="sidebar__item"><a href="/Admin/Index" class="sidebar__link"><i class="bi bi-grid"></i><span>Все заявки</span></a></li>
                                 <li class="sidebar__item"><a href="/Admin/Users" class="sidebar__link"><i class="bi bi-people"></i><span>Пользователи</span></a></li>
                                 <li class="sidebar__item"><a href="/Admin/Messages" class="sidebar__link"><i class="bi bi-chat-dots"></i><span>Обращения</span></a></li>

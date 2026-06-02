@@ -1,7 +1,9 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using PersonalCabinet.Hubs;
 using PersonalCabinet.Models;
 using PersonalCabinet.Services;
 using PersonalCabinet.ViewModels;
@@ -13,11 +15,12 @@ namespace PersonalCabinet.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly FileService _fileService;
-
-        public ApplicationController(ApplicationDbContext context, FileService fileService)
+        private readonly IHubContext<ChatHub> _hubContext;
+        public ApplicationController(ApplicationDbContext context, FileService fileService, IHubContext<ChatHub> hubContext)
         {
             _context = context;
             _fileService = fileService;
+            _hubContext = hubContext;
         }
 
         public async Task<IActionResult> Index(string sortOrder, string statusFilter, string searchString, int? page)
@@ -75,10 +78,10 @@ namespace PersonalCabinet.Controllers
                 .Include(a => a.Documents)
                 .Include(a => a.Messages)
                     .ThenInclude(m => m.Sender)
-                        .ThenInclude(s => s.IndividualProfile) 
+                        .ThenInclude(s => s.IndividualProfile)
                 .Include(a => a.Messages)
                     .ThenInclude(m => m.Sender)
-                        .ThenInclude(s => s.OrganizationProfile) 
+                        .ThenInclude(s => s.OrganizationProfile)
                 .Include(a => a.User)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
@@ -176,6 +179,15 @@ namespace PersonalCabinet.Controllers
                         Comment = "Заявка подана через форму создания"
                     });
                     await _context.SaveChangesAsync();
+                    await _hubContext.Clients.Group($"application_{application.Id}").SendAsync("ReceiveMessage", new
+                    {
+                        id = 0,
+                        senderName = "Система",
+                        messageText = "Заявка успешно подана",
+                        createdAt = DateTime.Now.ToString("dd.MM.yyyy HH:mm"),
+                        isOwn = false
+                    });
+
                     TempData["SuccessMessage"] = "Заявка успешно подана!";
                 }
                 else
@@ -268,6 +280,17 @@ namespace PersonalCabinet.Controllers
                     CreatedAt = DateTime.Now,
                     Comment = "Заявка отправлена на рассмотрение через редактирование"
                 });
+
+                // Уведомление в чат
+                await _hubContext.Clients.Group($"application_{id}").SendAsync("ReceiveMessage", new
+                {
+                    id = 0,
+                    senderName = "Система",
+                    messageText = "Заявка отправлена на рассмотрение",
+                    createdAt = DateTime.Now.ToString("dd.MM.yyyy HH:mm"),
+                    isOwn = false
+                });
+
                 TempData["SuccessMessage"] = "Заявка отправлена на рассмотрение!";
             }
             else
@@ -380,38 +403,17 @@ namespace PersonalCabinet.Controllers
             });
             await _context.SaveChangesAsync();
 
+            // Уведомление в чат
+            await _hubContext.Clients.Group($"application_{id}").SendAsync("ReceiveMessage", new
+            {
+                id = 0,
+                senderName = "Система",
+                messageText = "Заявка отправлена на рассмотрение",
+                createdAt = DateTime.Now.ToString("dd.MM.yyyy HH:mm"),
+                isOwn = false
+            });
+
             TempData["SuccessMessage"] = "Заявка отправлена на рассмотрение.";
-            return RedirectToAction("Details", new { id });
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SendMessage(long id, string messageText)
-        {
-            long? userId = GetCurrentUserId();
-            if (userId == null) return Challenge();
-
-            var application = await _context.Applications.FindAsync(id);
-            if (application == null) return NotFound();
-            if (application.UserId != userId && !User.IsInRole("Admin")) return NotFound();
-            if (string.IsNullOrWhiteSpace(messageText))
-            {
-                TempData["ErrorMessage"] = "Сообщение не может быть пустым.";
-                return RedirectToAction("Details", new { id });
-            }
-
-            var message = new Message
-            {
-                ApplicationId = id,
-                SenderId = userId.Value,
-                Message1 = messageText,
-                IsRead = false,
-                CreatedAt = DateTime.Now
-            };
-            _context.Messages.Add(message);
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Сообщение отправлено.";
             return RedirectToAction("Details", new { id });
         }
 
@@ -479,44 +481,6 @@ namespace PersonalCabinet.Controllers
                 seq++;
             } while (_context.Applications.Any(a => a.ApplicationNumber == number));
             return number;
-        }
-        [HttpGet]
-        public async Task<IActionResult> GetNewMessages(long id, long lastMessageId = 0)
-        {
-            var userId = GetCurrentUserId();
-            if (userId == null) return Unauthorized();
-
-            var newMessages = await _context.Messages
-                .Where(m => m.ApplicationId == id && m.Id > lastMessageId && m.SenderId != userId)
-                .Include(m => m.Sender)
-                .OrderBy(m => m.CreatedAt)
-                .ToListAsync();
-
-            foreach (var msg in newMessages.Where(m => (m.IsRead ?? false) == false))
-            {
-                msg.IsRead = true;
-            }
-            await _context.SaveChangesAsync();
-
-            var result = newMessages.Select(m => new
-            {
-                m.Id,
-                m.Message1,
-                m.CreatedAt,
-                SenderName = GetSenderName(m.Sender),
-                IsOwn = false
-            });
-
-            return Ok(result);
-        }
-        private string GetSenderName(User sender)
-        {
-            if (sender.Role == "Admin") return "Оператор";
-            if (sender.UserType == "INDIVIDUAL" && sender.IndividualProfile != null)
-                return $"{sender.IndividualProfile.LastName} {sender.IndividualProfile.FirstName} {sender.IndividualProfile.MiddleName}".Trim();
-            if (sender.UserType == "ORGANIZATION" && sender.OrganizationProfile != null)
-                return sender.OrganizationProfile.ShortName ?? sender.OrganizationProfile.FullName ?? sender.Email;
-            return sender.Email;
         }
     }
 }

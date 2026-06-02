@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using PersonalCabinet.Hubs;
 using PersonalCabinet.Models;
 using PersonalCabinet.Services;
 
@@ -61,7 +62,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
-
+builder.Services.AddSignalR();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -96,7 +97,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.MapHub<ChatHub>("/chatHub");
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

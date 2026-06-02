@@ -186,11 +186,10 @@ namespace PersonalCabinet.Controllers
             if (user == null) return NotFound();
             return View(user);
         }
-        public async Task<IActionResult> Messages()
+        public async Task<IActionResult> Messages(string searchString, bool? unreadOnly, string sortOrder)
         {
             var currentUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
-            var applications = await _context.Applications
+            var query = _context.Applications
                 .Where(a => a.Messages.Any())
                 .Select(a => new
                 {
@@ -199,11 +198,41 @@ namespace PersonalCabinet.Controllers
                     a.Title,
                     LastMessageDate = a.Messages.Max(m => m.CreatedAt),
                     UnreadCount = a.Messages.Count(m => (m.IsRead ?? false) == false && m.SenderId != currentUserId)
-                })
-                .OrderByDescending(a => a.LastMessageDate)
-                .ToListAsync();
+                });
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                var appIdsWithText = await _context.Messages
+                    .Where(m => m.Message1.Contains(searchString))
+                    .Select(m => m.ApplicationId)
+                    .Distinct()
+                    .ToListAsync();
+                query = query.Where(a => appIdsWithText.Contains(a.Id));
+            }
+            if (unreadOnly == true)
+            {
+                query = query.Where(a => a.UnreadCount > 0);
+            }
+            var items = await query.ToListAsync();
+            switch (sortOrder)
+            {
+                case "date_asc":
+                    items = items.OrderBy(a => a.LastMessageDate).ToList();
+                    break;
+                case "date_desc":
+                    items = items.OrderByDescending(a => a.LastMessageDate).ToList();
+                    break;
+                default:
+                    items = items.OrderByDescending(a => a.UnreadCount > 0)
+                                 .ThenByDescending(a => a.LastMessageDate)
+                                 .ToList();
+                    break;
+            }
 
-            ViewBag.Applications = applications;
+            ViewBag.CurrentSearchString = searchString;
+            ViewBag.UnreadOnly = unreadOnly ?? false;
+            ViewBag.CurrentSort = sortOrder ?? "default";
+            ViewBag.Applications = items;
+
             return View();
         }
         [HttpGet]
@@ -246,5 +275,50 @@ namespace PersonalCabinet.Controllers
                 return sender.OrganizationProfile.ShortName ?? sender.OrganizationProfile.FullName ?? sender.Email;
             return sender.Email;
         }
+        public async Task<IActionResult> MainMenuAdmin()
+        {
+            int submittedCount = await _context.Applications.CountAsync(a => a.Status == "Submitted");
+            int inReviewCount = await _context.Applications.CountAsync(a => a.Status == "InReview");
+            var currentUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            int pendingMessagesCount = await _context.Applications
+                .Where(a => a.Messages.Any(m => (m.IsRead ?? false) == false && m.SenderId != currentUserId))
+                .CountAsync();
+            var latestApplications = await _context.Applications
+                .Include(a => a.User)
+                .Where(a => a.Status != "Draft")
+                .OrderByDescending(a => a.CreatedAt)
+                .Take(5)
+                .ToListAsync();
+
+            ViewBag.SubmittedCount = submittedCount;
+            ViewBag.InReviewCount = inReviewCount;
+            ViewBag.PendingMessagesCount = pendingMessagesCount;
+            ViewBag.LatestApplications = latestApplications;
+
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetUserPassword([FromBody] ResetPasswordModel model)
+        {
+            if (model == null || string.IsNullOrWhiteSpace(model.NewPassword))
+                return BadRequest(new { message = "Неверные данные" });
+
+            var user = await _context.Users.FindAsync(model.UserId);
+            if (user == null)
+                return NotFound(new { message = "Пользователь не найден" });
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+            user.UpdatedAt = DateTime.Now;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Пароль успешно изменён" });
+        }
+
+        public class ResetPasswordModel
+        {
+            public long UserId { get; set; }
+            public string NewPassword { get; set; }
+        }
+
     }
 }

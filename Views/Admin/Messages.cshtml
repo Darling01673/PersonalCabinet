@@ -2,39 +2,116 @@
     ViewData["Title"] = "Обращения (админ)";
     var applications = ViewBag.Applications as IEnumerable<dynamic> ?? new List<dynamic>();
 }
+<link rel="stylesheet" href="/css/mainmenu.css" />
 
-<div class="page-title"><i class="bi bi-chat-dots"></i> Обращения по заявкам</div>
+<div class="page">
+    <div class="header">
+        <h1><i class="bi bi-chat-dots"></i> Обращения по заявкам</h1>
+        <p>Заявки с сообщениями от пользователей</p>
+    </div>
 
-<div class="card-cabinet">
-    <div class="card-header">Заявки с сообщениями</div>
-    <div class="card-body">
+    <div class="card">
+        <h2>Фильтр сообщений</h2>
+    <form method="get" class="row g-3">
+        <div class="col-md-5">
+            <label class="form-label">Поиск по сообщениям</label>
+            <input type="text" name="searchString" class="form-control" value="@ViewBag.CurrentSearchString" placeholder="Введите текст сообщения..." />
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <div class="form-check">
+                <input type="checkbox" name="unreadOnly" value="true" class="form-check-input" id="unreadOnly" @(ViewBag.UnreadOnly ? "checked" : "") />
+                <label class="form-check-label" for="unreadOnly">Только с непрочитанными</label>
+            </div>
+        </div>
+       <div class="col-md-2 d-flex align-items-end">
+    <button type="submit" class="btn-cabinet-outline w-100">Применить</button>
+</div>
+<div class="col-md-2 d-flex align-items-end">
+    <a href="@Url.Action("Messages")" class="btn-cabinet-outline w-100">Сбросить</a>
+</div>
+    </form>
+        <div class="mt-3">
+            <span class="text-muted">Сортировка:</span>
+            <a href="@Url.Action("Messages", new { searchString = ViewBag.CurrentSearchString, unreadOnly = ViewBag.UnreadOnly, sortOrder = "default" })" class="sort-link ms-2 @(ViewBag.CurrentSort == "default" ? "fw-bold" : "")">По умолчанию</a>
+            <a href="@Url.Action("Messages", new { searchString = ViewBag.CurrentSearchString, unreadOnly = ViewBag.UnreadOnly, sortOrder = "date_desc" })" class="sort-link ms-2 @(ViewBag.CurrentSort == "date_desc" ? "fw-bold" : "")">Сначала новые</a>
+            <a href="@Url.Action("Messages", new { searchString = ViewBag.CurrentSearchString, unreadOnly = ViewBag.UnreadOnly, sortOrder = "date_asc" })" class="sort-link ms-2 @(ViewBag.CurrentSort == "date_asc" ? "fw-bold" : "")">Сначала старые</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Заявки с сообщениями</h2>
         @if (applications.Any())
         {
-                    <ul class="list-group">
+                <div class="list-group">
                 @foreach (var app in applications)
                 {
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>Заявка №@app.ApplicationNumber</strong><br />
-                                            <small>@app.Title</small><br />
-                                            <small class="text-muted">Последнее сообщение: @(app.LastMessageDate?.ToString("dd.MM.yyyy HH:mm") ?? "—")</small>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2">
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Заявка №@app.ApplicationNumber</strong><br />
+                                    <small>@app.Title</small><br />
+                                    <small class="text-muted">Последнее сообщение: @(app.LastMessageDate?.ToString("dd.MM.yyyy HH:mm") ?? "—")</small>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
                             @if (app.UnreadCount > 0)
                             {
-                                                        <span class="badge bg-danger rounded-pill">@app.UnreadCount</span>
+                                            <span class="badge bg-danger rounded-pill">@app.UnreadCount</span>
                             }
-                                            <a href="/Admin/Details/@app.Id" class="btn-cabinet-outline btn-sm">
-                                                <i class="bi bi-chat-text"></i> Перейти к переписке
-                                            </a>
-                                        </div>
-                                    </li>
+                                    <a href="/Admin/Details/@app.Id" class="btn-small">
+                                        <i class="bi bi-chat-text"></i> Перейти к переписке
+                                    </a>
+                                </div>
+                            </div>
                 }
-                    </ul>
+                </div>
         }
         else
         {
-                    <p class="text-muted text-center">Нет сообщений.</p>
+                <div class="empty">
+                    <i class="bi bi-inbox"></i>
+                    <p>Нет сообщений, соответствующих условиям.</p>
+                </div>
         }
     </div>
 </div>
+
+<style>
+    .form-check {
+        display: flex;
+        align-items: center;
+        margin-top: 6px;
+    }
+    .form-check-input {
+        width: 18px;
+        height: 18px;
+        margin-right: 8px;
+        margin-top: 0;
+    }
+    .form-check-label {
+        font-weight: normal;
+        margin-bottom: 0;
+        cursor: pointer;
+    }
+    .sort-link {
+        text-decoration: none;
+        color: #005baa;
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: 0.2s;
+    }
+    .sort-link:hover {
+        background-color: #e9ecef;
+        text-decoration: underline;
+    }
+    .fw-bold {
+        font-weight: bold;
+        background-color: #e9ecef;
+    }
+    .badge.bg-danger {
+        background-color: #dc3545 !important;
+        color: white;
+        border-radius: 20px;
+        padding: 4px 10px;
+        font-size: 12px;
+    }
+</style>

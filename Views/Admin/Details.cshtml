@@ -104,73 +104,70 @@
                 <div class="row mb-2"><div class="col-4 fw-bold">Дата выдачи:</div><div class="col-8">@(Model.PassportDate?.ToString("dd.MM.yyyy") ?? "—")</div></div>
             </div>
         </div>
+        <div class="card-cabinet mt-4">
+            <div class="card-header"><i class="bi bi-chat-dots"></i> Чат с заявителем</div>
+            <div class="card-body p-0">
+                <div id="chat-window" style="display: flex; flex-direction: column; height: 495px;">
+                    <div class="chat-messages" id="chat-messages">
+                        @foreach (var msg in Model.Messages.OrderBy(m => m.CreatedAt))
+                        {
+                            string senderName = "Пользователь";
+                            if (msg.Sender != null)
+                            {
+                                if (msg.Sender.Role == "Admin")
+                                {
+                                    senderName = "Администратор";
+                                }
+                                else if (msg.Sender.UserType == "INDIVIDUAL" && msg.Sender.IndividualProfile != null)
+                                    senderName = $"{msg.Sender.IndividualProfile.LastName} {msg.Sender.IndividualProfile.FirstName} {msg.Sender.IndividualProfile.MiddleName}".Trim();
+                                else if (msg.Sender.UserType == "ORGANIZATION" && msg.Sender.OrganizationProfile != null)
+                                    senderName = msg.Sender.OrganizationProfile.ShortName ?? msg.Sender.OrganizationProfile.FullName ?? msg.Sender.Email;
+                                else
+                                    senderName = msg.Sender.Email;
+                            }
+                                <div class="chat-message @(msg.SenderId == (long?)ViewBag.CurrentUserId ? "user" : "operator")">
+                                    <p>@msg.Message1</p>
+                                    <small>@senderName · @msg.CreatedAt?.ToString("dd.MM.yyyy HH:mm")</small>
+                                </div>
+                        }
+                    </div>
+                    <div class="chat-input">
+                        <form id="chat-form">
+                            <input type="text" id="chat-text" placeholder="Введите сообщение..." autocomplete="off" required />
+                            <button type="submit"><i class="bi bi-send-fill"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-<div id="chat-widget">
-    <button id="chat-toggle" title="Чат с заявителем">
-        <i class="bi bi-chat-dots-fill"></i>
-    </button>
-    <div id="chat-window" style="display: none;">
-        <div class="chat-header">
-            <span><i class="bi bi-headset"></i> Чат с заявителем</span>
-            <button id="chat-close" title="Закрыть">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </div>
-        <div class="chat-messages" id="chat-messages">
-            @foreach (var msg in Model.Messages.OrderBy(m => m.CreatedAt))
-            {
-                string senderName = "Пользователь";
-                if (msg.Sender != null)
-                {
-                    if (msg.Sender.UserType == "INDIVIDUAL" && msg.Sender.IndividualProfile != null)
-                        senderName = $"{msg.Sender.IndividualProfile.LastName} {msg.Sender.IndividualProfile.FirstName} {msg.Sender.IndividualProfile.MiddleName}".Trim();
-                    else if (msg.Sender.UserType == "ORGANIZATION" && msg.Sender.OrganizationProfile != null)
-                        senderName = msg.Sender.OrganizationProfile.ShortName ?? msg.Sender.OrganizationProfile.FullName ?? msg.Sender.Email;
-                    else
-                        senderName = msg.Sender.Email;
-                }
-                    <div class="chat-message @(msg.SenderId == (long?)ViewBag.CurrentUserId ? "user" : "operator")">
-                        <p>@msg.Message1</p>
-                        <small>@senderName · @msg.CreatedAt?.ToString("dd.MM.yyyy HH:mm")</small>
-                    </div>
-            }
-        </div>
-        <div class="chat-input">
-            <form id="chat-form">
-                <input type="text" id="chat-text" placeholder="Введите сообщение..." autocomplete="off" required />
-                <button type="submit"><i class="bi bi-send-fill"></i></button>
-            </form>
-        </div>
-    </div>
+
+<div class="mt-3 d-flex gap-2 mb-4">
+    <a href="/Admin/Index" class="btn-cabinet-outline">Назад к списку</a>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const chatWindow = document.getElementById('chat-window');
-        const toggleBtn = document.getElementById('chat-toggle');
-        const closeBtn = document.getElementById('chat-close');
         const chatForm = document.getElementById('chat-form');
         const chatText = document.getElementById('chat-text');
         const messagesContainer = document.getElementById('chat-messages');
-
         let lastMessageId = @(Model.Messages.Any() ? Model.Messages.Max(m => m.Id) : 0);
 
-        function openChat() {
-            chatWindow.style.display = 'flex';
-            toggleBtn.style.display = 'none';
-            scrollToBottom();
-        }
-        function closeChat() {
-            chatWindow.style.display = 'none';
-            toggleBtn.style.display = 'flex';
-        }
         function scrollToBottom() {
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
+        scrollToBottom();
 
-        toggleBtn.addEventListener('click', openChat);
-        closeBtn.addEventListener('click', closeChat);
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
         chatForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const text = chatText.value.trim();
@@ -197,6 +194,7 @@
                 scrollToBottom();
             }
         });
+
         async function fetchNewMessages() {
             try {
                 const response = await fetch(`/Admin/GetNewMessages?id=@Model.Id&lastMessageId=${lastMessageId}`);
@@ -204,7 +202,6 @@
                 const messages = await response.json();
                 if (messages.length === 0) return;
 
-                const isChatOpen = chatWindow.style.display === 'flex';
                 for (const msg of messages) {
                     const messageDiv = document.createElement('div');
                     messageDiv.className = `chat-message ${msg.isOwn ? 'user' : 'operator'}`;
@@ -214,29 +211,12 @@
                     messagesContainer.appendChild(messageDiv);
                     lastMessageId = msg.id;
                 }
-                if (isChatOpen) {
-                    scrollToBottom();
-                } else {
-                    if (messages.some(m => !m.isOwn)) {
-                        toggleBtn.classList.add('has-new');
-                        setTimeout(() => toggleBtn.classList.remove('has-new'), 5000);
-                    }
-                }
+                scrollToBottom();
             } catch (err) {
                 console.error('Polling error:', err);
             }
         }
 
         setInterval(fetchNewMessages, 3000);
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
     });
 </script>

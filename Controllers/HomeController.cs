@@ -30,8 +30,8 @@ namespace PersonalCabinet.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 if (User.IsInRole("Admin"))
-                    return RedirectToAction("Index", "Admin");
-                else
+                    return RedirectToAction("MainMenuAdmin", "Admin");
+                else 
                     return RedirectToAction("MainMenu");
             }
             return View();
@@ -40,7 +40,7 @@ namespace PersonalCabinet.Controllers
         public async Task<IActionResult> MainMenu()
         {
             if (User.IsInRole("Admin"))
-                return RedirectToAction("Index", "Admin");
+                return RedirectToAction("MainMenuAdmin", "Admin");
             string userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             long userId = long.Parse(userIdString);
 
