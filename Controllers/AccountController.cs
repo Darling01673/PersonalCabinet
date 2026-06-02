@@ -108,7 +108,7 @@ namespace PersonalCabinet.Controllers
             await SignInAsync(user);
 
             if (user.Role == "Admin")
-                return RedirectToAction("Index", "Admin");
+                return RedirectToAction("MainMenuAdmin", "Admin");
             else
                 return RedirectToAction("MainMenu", "Home");
         }
@@ -145,7 +145,7 @@ namespace PersonalCabinet.Controllers
             await SignInAsync(user, model.RememberMe);
 
             if (user.Role == "Admin")
-                return RedirectToAction("Index", "Admin");
+                return RedirectToAction("MainMenuAdmin", "Admin");
             else
                 return RedirectToAction("MainMenu", "Home");
         }
