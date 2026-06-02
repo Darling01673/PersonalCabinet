@@ -27,44 +27,38 @@ namespace PersonalCabinet.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (!ModelState.IsValid)
+            if (string.IsNullOrWhiteSpace(model.Phone))
             {
-                return View(model);
+                ModelState.AddModelError("Phone", "Поле Телефон обязательно");
             }
-
+            if (string.IsNullOrWhiteSpace(model.Password))
+            {
+                ModelState.AddModelError("Password", "Поле Пароль обязательно");
+            }
             string consent = Request.Form["PersonalDataConsent"];
             if (consent != "true" && consent != "on" && consent != "True")
             {
                 ModelState.AddModelError("", "Необходимо согласие на обработку персональных данных");
                 return View(model);
             }
-
             bool emailExists = await _context.Users.AnyAsync(u => u.Email == model.Email);
             if (emailExists)
             {
                 ModelState.AddModelError("Email", "Пользователь с таким email уже существует");
                 return View(model);
             }
-
             if (model.UserType == "Organization")
             {
                 if (string.IsNullOrWhiteSpace(model.OrgFullName))
-                {
                     ModelState.AddModelError("OrgFullName", "Полное наименование обязательно");
-                }
                 if (string.IsNullOrWhiteSpace(model.OrgShortName))
-                {
                     ModelState.AddModelError("OrgShortName", "Сокращённое наименование обязательно");
-                }
             }
             else
             {
                 if (string.IsNullOrWhiteSpace(model.FullName))
-                {
                     ModelState.AddModelError("FullName", "ФИО обязательно");
-                }
             }
-
             if (!ModelState.IsValid)
             {
                 return View(model);
