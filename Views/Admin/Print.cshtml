@@ -1,0 +1,167 @@
+﻿@model PersonalCabinet.Models.Application
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>Печать заявки № @Model.ApplicationNumber</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+
+    
+    <link rel="stylesheet" href="~/css/Print.css" asp-append-version="true" />
+</head>
+<body>
+
+    <div class="no-print-zone">
+        <a href="javascript:history.back()" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Вернуться назад
+        </a>
+        <button onclick="window.print()" class="btn-print">
+            <i class="bi bi-printer"></i> Печать заявки / Сохранить в PDF
+        </button>
+    </div>
+
+    <div class="print-container">
+
+        <div class="doc-header">
+            <div style="font-weight: bold; font-size: 14px;">АО «ГНЦ НИИАР»</div>
+            <div style="font-size: 12px; color: #444;">Личный кабинет технологического присоединения к электрическим сетям</div>
+            <div class="doc-title">Заявка № @Model.ApplicationNumber на технологическое присоединение энергопринимающих устройств</div>
+            
+        </div>
+
+        <table class="print-table">
+            <tbody>
+
+                <tr>
+                    <td colspan="2" class="section-title">1. Общие сведения о заявке</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Системный ID заявки:</td>
+                    <td class="value-cell">@Model.Id</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Номер заявки:</td>
+                    <td class="value-cell" style="font-weight: bold;">@Model.ApplicationNumber</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Наименование заявки:</td>
+                    <td class="value-cell">@Model.Title</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Текущий статус:</td>
+                    <td class="value-cell">@Model.Status</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Причина обращения:</td>
+                    <td class="value-cell">@(Model.ApplicationReason ?? "—")</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Описание / Примечание:</td>
+                    <td class="value-cell">@(Model.Description ?? "—")</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Адрес расположения объекта:</td>
+                    <td class="value-cell">@Model.ObjectAddress</td>
+                </tr>
+
+                <tr>
+                    <td colspan="2" class="section-title">2. Сведения о заявителе</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">ФИО заявителя (полностью):</td>
+                    <td class="value-cell" style="font-weight: bold;">
+                        @($"{Model.LastName} {Model.FirstName} {Model.MiddleName}".Trim())
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label-cell">ИНН:</td>
+                    <td class="value-cell">@(Model.Inn ?? "—")</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Контактный телефон:</td>
+                    <td class="value-cell">@(Model.Phone ?? "—")</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Место жительства (регистрация):</td>
+                    <td class="value-cell">@(Model.ResidenceAddress ?? "—")</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Паспортные данные:</td>
+                    <td class="value-cell">
+                        Серия: @(string.IsNullOrEmpty(Model.PassportSeries) ? "—" : Model.PassportSeries)
+                        Номер: @(string.IsNullOrEmpty(Model.PassportNumber) ? "—" : Model.PassportNumber)
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Дата выдачи паспорта:</td>
+                    <td class="value-cell">@(Model.PassportDate.HasValue? Model.PassportDate.Value.ToString("dd.MM.yyyy") : "—")</td>
+                </tr>
+
+                <tr>
+                    <td colspan="2" class="section-title">3. Технические параметры энергопринимающих устройств</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Наименование ЭПУ:</td>
+                    <td class="value-cell">@(Model.EnergyDeviceName ?? "—")</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Адрес размещения ЭПУ:</td>
+                    <td class="value-cell">@(Model.DeviceAddress ?? Model.ObjectAddress)</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Запрашиваемая мощность (макс.):</td>
+                    <td class="value-cell">@(Model.RequestedPower.HasValue? Model.RequestedPower.Value + " кВт" : "—")</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Ранее присоединенная мощность:</td>
+                    <td class="value-cell">@(Model.PreviousPowerKw.HasValue? Model.PreviousPowerKw.Value + " кВт" : "—")</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Общая присоединенная мощность:</td>
+                    <td class="value-cell" style="font-weight: bold;">@(Model.TotalPowerKw.HasValue? Model.TotalPowerKw.Value + " кВт" : "—")</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Категория надежности электроснабжения:</td>
+                    <td class="value-cell">@(Model.ReliabilityCategory ?? "—")</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Сроки проектирования (дата ввода):</td>
+                    <td class="value-cell">@(Model.DesignDeadline.HasValue? Model.DesignDeadline.Value.ToString("dd.MM.yyyy") : "—")</td>
+                </tr>
+
+
+                @if (!string.IsNullOrEmpty(Model.ExtraData))
+                {
+                    <tr>
+                        <td class="label-cell">Дополнительные метаданные:</td>
+                        <td class="value-cell" style="font-family: monospace; font-size: 11px;">@Model.ExtraData</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="signatures-block">
+            <div class="signature-line">
+                Подпись Заявителя<br />
+                <span style="font-size: 10px; color: #555;">(подпись, инициалы, фамилия)</span>
+                <div style="margin-top: 15px; font-weight: bold;">
+                     @($"{Model.LastName} {Model.FirstName?.FirstOrDefault()}. {Model.MiddleName?.FirstOrDefault()}.".Trim()) 
+                </div>
+            </div>
+            <div class="signature-line">
+                Представитель АО «ГНЦ НИИАР»<br />
+                <span style="font-size: 10px; color: #555;">(подпись, должность, ФИО)</span>
+                <div style="margin-top: 15px; font-weight: bold;">
+                     ________________________ 
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

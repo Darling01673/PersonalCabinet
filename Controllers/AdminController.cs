@@ -313,7 +313,15 @@ namespace PersonalCabinet.Controllers
 
             return Ok(new { message = "Пароль успешно изменён" });
         }
+        [HttpGet]
+        public async Task<IActionResult> Print(long id)
+        {
+            var application = await _context.Applications
+                .Include(a => a.User)
+                .FirstOrDefaultAsync(a => a.Id == id);
 
+            return View(application);
+        }
         public class ResetPasswordModel
         {
             public long UserId { get; set; }
