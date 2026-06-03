@@ -3,7 +3,37 @@
     var applications = ViewBag.Applications as IEnumerable<dynamic> ?? new List<dynamic>();
 }
 <link rel="stylesheet" href="/css/index.css" />
+
 <div class="page-title"><i class="bi bi-chat-dots"></i> Обращения</div>
+
+<div class="card-cabinet">
+    <div class="card-header">Фильтр сообщений</div>
+    <div class="card-body">
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Поиск по тексту сообщений</label>
+                <input type="text" name="searchString" class="form-control" value="@ViewBag.CurrentSearchString" placeholder="Введите текст..." />
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <div class="form-check">
+                    <input type="checkbox" name="unreadOnly" value="true" class="form-check-input" id="unreadOnly" @(ViewBag.UnreadOnly ? "checked" : "") />
+                    <label class="form-check-label" for="unreadOnly">Только с непрочитанными</label>
+                </div>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn-cabinet-outline w-100">Применить</button>
+                <a href="@Url.Action("Index")" class="btn-cabinet-outline w-100 ms-2">Сбросить</a>
+            </div>
+        </form>
+
+        <div class="mb-3">
+            <span class="text-muted">Сортировка:</span>
+            <a href="@Url.Action("Index", new { searchString = ViewBag.CurrentSearchString, unreadOnly = ViewBag.UnreadOnly, sortOrder = "default" })" class="sort-link ms-2 @(ViewBag.CurrentSort == "default" ? "fw-bold" : "")">По умолчанию</a>
+            <a href="@Url.Action("Index", new { searchString = ViewBag.CurrentSearchString, unreadOnly = ViewBag.UnreadOnly, sortOrder = "date_desc" })" class="sort-link ms-2 @(ViewBag.CurrentSort == "date_desc" ? "fw-bold" : "")">Сначала новые</a>
+            <a href="@Url.Action("Index", new { searchString = ViewBag.CurrentSearchString, unreadOnly = ViewBag.UnreadOnly, sortOrder = "date_asc" })" class="sort-link ms-2 @(ViewBag.CurrentSort == "date_asc" ? "fw-bold" : "")">Сначала старые</a>
+        </div>
+    </div>
+</div>
 
 <div class="card-cabinet">
     <div class="card-header">Заявки с сообщениями</div>
@@ -32,7 +62,42 @@
         }
         else
         {
-                <p class="text-muted text-center">Нет сообщений.</p>
+                <p class="text-muted text-center">Нет сообщений, соответствующих условиям.</p>
         }
     </div>
 </div>
+
+<style>
+    .form-check {
+        display: flex;
+        align-items: center;
+        margin-top: 6px;
+    }
+    .form-check-input {
+        width: 18px;
+        height: 18px;
+        margin-right: 8px;
+        margin-top: 0;
+    }
+    .form-check-label {
+        font-weight: normal;
+        margin-bottom: 0;
+        cursor: pointer;
+    }
+    .sort-link {
+        text-decoration: none;
+        color: #005baa;
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: 0.2s;
+    }
+    .sort-link:hover {
+        background-color: #e9ecef;
+        text-decoration: underline;
+    }
+    .fw-bold {
+        font-weight: bold;
+        background-color: #e9ecef;
+    }
+</style>

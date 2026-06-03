@@ -16,57 +16,88 @@ namespace PersonalCabinet.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString, bool? unreadOnly, string sortOrder)
         {
             string userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null)
-            {
-                return Challenge();
-            }
+            if (userIdClaim == null) return Challenge();
             long userId = long.Parse(userIdClaim);
-
-            List<Application> applicationsWithMessages = await _context.Applications
+            var applications = await _context.Applications
                 .Include(a => a.Messages)
-                .Where(a => a.UserId == userId && a.Messages.Any())
+                .Where(a => a.UserId == userId)
                 .ToListAsync();
-
             List<object> resultList = new List<object>();
 
-            foreach (Application app in applicationsWithMessages)
+            foreach (var app in applications)
             {
-                DateTime? lastMessageDate = null;
-                foreach (Message msg in app.Messages)
+                if (app.Messages == null || app.Messages.Count == 0)
+                    continue;
+                if (!string.IsNullOrEmpty(searchString))
                 {
-                    if (lastMessageDate == null || msg.CreatedAt > lastMessageDate)
+                    bool found = false;
+                    foreach (var msg in app.Messages)
                     {
-                        lastMessageDate = msg.CreatedAt;
+                        if (msg.Message1 != null && msg.Message1.Contains(searchString))
+                        {
+                            found = true;
+                            break;
+                        }
                     }
+                    if (!found) continue;
                 }
-
-                int unreadCount = 0;
-                foreach (Message msg in app.Messages)
+                DateTime? lastDate = null;
+                foreach (var msg in app.Messages)
+                {
+                    if (lastDate == null || msg.CreatedAt > lastDate)
+                        lastDate = msg.CreatedAt;
+                }
+                int unread = 0;
+                foreach (var msg in app.Messages)
                 {
                     if (msg.IsRead == false && msg.SenderId != userId)
-                    {
-                        unreadCount++;
-                    }
+                        unread++;
                 }
-
-                var item = new
+                resultList.Add(new
                 {
                     app.Id,
                     app.ApplicationNumber,
                     app.Title,
-                    LastMessageDate = lastMessageDate,
-                    UnreadCount = unreadCount
-                };
-
-                resultList.Add(item);
+                    LastMessageDate = lastDate,
+                    UnreadCount = unread
+                });
             }
 
-            resultList = resultList.OrderByDescending(item => item.GetType().GetProperty("LastMessageDate").GetValue(item, null)).ToList();
+            if (unreadOnly == true)
+            {
+                List<object> filtered = new List<object>();
+                foreach (var item in resultList)
+                {
+                    dynamic d = item;
+                    if (d.UnreadCount > 0)
+                        filtered.Add(item);
+                }
+                resultList = filtered;
+            }
 
+            if (sortOrder == "date_asc")
+            {
+                resultList = resultList.OrderBy(x => ((dynamic)x).LastMessageDate).ToList();
+            }
+            else if (sortOrder == "date_desc")
+            {
+                resultList = resultList.OrderByDescending(x => ((dynamic)x).LastMessageDate).ToList();
+            }
+            else
+            {
+                resultList = resultList
+                    .OrderByDescending(x => ((dynamic)x).UnreadCount > 0)
+                    .ThenByDescending(x => ((dynamic)x).LastMessageDate)
+                    .ToList();
+            }
+            ViewBag.CurrentSearchString = searchString;
+            ViewBag.UnreadOnly = unreadOnly ?? false;
+            ViewBag.CurrentSort = sortOrder ?? "default";
             ViewBag.Applications = resultList;
+
             return View();
         }
     }
