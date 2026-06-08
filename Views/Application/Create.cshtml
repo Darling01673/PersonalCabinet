@@ -173,17 +173,17 @@
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label class="form-label-cabinet">Запрашиваемая мощность (кВт) *</label>
-                        <input type="number" step="0.01" name="RequestedPower" class="form-control-cabinet"
+                        <input type="number" step="1" name="RequestedPower" class="form-control-cabinet"
        value="@Model.RequestedPower?.ToString()" required />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label-cabinet">Ранее присоединённая мощность (кВт)</label>
-                        <input type="number" step="0.01" name="PreviousPowerKw" class="form-control-cabinet"
+                        <input type="number" step="1" name="PreviousPowerKw" class="form-control-cabinet"
        value="@Model.PreviousPowerKw.ToString()" required />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label-cabinet">Общая присоединённая мощность (кВт) *</label>
-                       <input type="number" step="0.01" name="TotalPowerKw" class="form-control-cabinet"
+                       <input type="number" step="1" name="TotalPowerKw" class="form-control-cabinet"
        value="@Model.TotalPowerKw.ToString()" required />
                     </div>
                 </div>

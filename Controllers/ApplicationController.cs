@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PersonalCabinet.Hubs;
 using PersonalCabinet.Models;
-using PersonalCabinet.Services;
 using PersonalCabinet.ViewModels;
 
 namespace PersonalCabinet.Controllers
@@ -106,34 +105,38 @@ namespace PersonalCabinet.Controllers
         {
             long? userId = GetCurrentUserId();
             if (userId == null) return Challenge();
+            var user = await _context.Users.FindAsync(userId.Value);
+            string applicantType = user?.UserType ?? "INDIVIDUAL";
+            if (applicantType == "ORGANIZATION")
+            {
+                ModelState.Remove("LastName");
+                ModelState.Remove("FirstName");
+                ModelState.Remove("MiddleName");
+                ModelState.Remove("ResidenceAddress");
+                ModelState.Remove("PassportSeries");
+                ModelState.Remove("PassportNumber");
+                ModelState.Remove("PassportDate");
+                ModelState.Remove("PassportWhoIssued");
+                ModelState.Remove("AddressRegistr");
+                ModelState.Remove("SNILS");
+                ModelState.Remove("DateSNILS");
+            }
+            else 
+            {
+                ModelState.Remove("OrganizationFullName");
+                ModelState.Remove("OrganizationShortName");
+                ModelState.Remove("ContactPerson");
+            }
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                TempData["ErrorMessage"] = "Ошибки валидации: " + string.Join("; ", errors);
+                return View(model);
+            }
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var user = await _context.Users.FindAsync(userId.Value);
-                string applicantType = user?.UserType ?? "INDIVIDUAL";
-                if (applicantType == "ORGANIZATION")
-                {
-                    ModelState.Remove("LastName");
-                    ModelState.Remove("FirstName");
-                    ModelState.Remove("MiddleName");
-                    ModelState.Remove("ResidenceAddress");
-                    ModelState.Remove("PassportSeries");
-                    ModelState.Remove("PassportNumber");
-                    ModelState.Remove("PassportDate");
-                    ModelState.Remove("PassportWhoIssued");
-                    ModelState.Remove("AddressRegistr");
-                    ModelState.Remove("SNILS");
-                    ModelState.Remove("DateSNILS");
-                }
-                else
-                {
-                    ModelState.Remove("OrganizationFullName");
-                    ModelState.Remove("OrganizationShortName");
-                    ModelState.Remove("ContactPerson");
-                }
-                if (!ModelState.IsValid)
-                    return View(model);
                 var application = new Application
                 {
                     UserId = userId.Value,
@@ -149,16 +152,13 @@ namespace PersonalCabinet.Controllers
                     PreviousPowerKw = model.PreviousPowerKw,
                     TotalPowerKw = model.TotalPowerKw,
                     ReliabilityCategory = model.ReliabilityCategory,
-                    DesignDeadline = model.DesignDeadline.HasValue
-                        ? DateTime.SpecifyKind(model.DesignDeadline.Value, DateTimeKind.Utc)
-                        : null,
+                    DesignDeadline = model.DesignDeadline.HasValue ? DateTime.SpecifyKind(model.DesignDeadline.Value, DateTimeKind.Utc) : null,
                     ApplicationReason = model.ApplicationReason,
                     Description = model.Description,
                     PaymentPlan = model.PaymentPlan,
                     GuarantyingSupplier = model.GuarantyingSupplier,
                     ApplicantType = applicantType
                 };
-
                 if (applicantType == "INDIVIDUAL")
                 {
                     application.LastName = model.LastName;
@@ -169,13 +169,9 @@ namespace PersonalCabinet.Controllers
                     application.Inn = model.Inn;
                     application.PassportSeries = model.PassportSeries;
                     application.PassportNumber = model.PassportNumber;
-                    application.PassportDate = model.PassportDate.HasValue
-                        ? DateTime.SpecifyKind(model.PassportDate.Value, DateTimeKind.Utc)
-                        : null;
+                    application.PassportDate = model.PassportDate.HasValue ? DateTime.SpecifyKind(model.PassportDate.Value, DateTimeKind.Utc) : null;
                     application.SNILS = model.SNILS;
-                    application.DateSNILS = model.DateSNILS.HasValue
-                        ? DateTime.SpecifyKind(model.DateSNILS.Value, DateTimeKind.Utc)
-                        : null;
+                    application.DateSNILS = model.DateSNILS.HasValue ? DateTime.SpecifyKind(model.DateSNILS.Value, DateTimeKind.Utc) : null;
                     application.PassportWhoIssued = model.PassportWhoIssued;
                     application.AddressRegistr = model.AddressRegistr;
                 }
@@ -190,13 +186,22 @@ namespace PersonalCabinet.Controllers
 
                 _context.Applications.Add(application);
                 await _context.SaveChangesAsync();
-
                 if (model.Attachments != null && model.Attachments.Any())
                 {
                     foreach (var file in model.Attachments)
                     {
                         if (file.Length == 0) continue;
+
+                        if (file.Length > 10 * 1024 * 1024)
+                        {
+                            throw new Exception($"Файл {file.FileName} превышает 10 МБ");
+                        }
                         var (storedName, relativePath) = await _fileService.SaveFileAsync(file, application.Id);
+                        if (string.IsNullOrEmpty(relativePath))
+                        {
+                            throw new Exception($"Не удалось сохранить файл {file.FileName}");
+                        }
+
                         _context.Documents.Add(new Document
                         {
                             ApplicationId = application.Id,
@@ -210,7 +215,6 @@ namespace PersonalCabinet.Controllers
                     }
                     await _context.SaveChangesAsync();
                 }
-
                 string submitType = Request.Form["submitType"];
                 if (submitType == "submit")
                 {
@@ -226,15 +230,6 @@ namespace PersonalCabinet.Controllers
                         Comment = "Заявка подана через форму создания"
                     });
                     await _context.SaveChangesAsync();
-                    await _hubContext.Clients.Group($"application_{application.Id}").SendAsync("ReceiveMessage", new
-                    {
-                        id = 0,
-                        senderName = "Система",
-                        messageText = "Заявка успешно подана",
-                        createdAt = DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm"),
-                        isOwn = false
-                    });
-
                     TempData["SuccessMessage"] = "Заявка успешно подана!";
                 }
                 else
@@ -248,9 +243,10 @@ namespace PersonalCabinet.Controllers
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                ModelState.AddModelError("", "Ошибка: " + ex.Message);
+                Console.WriteLine($"[ERROR] {ex.ToString()}");
+                ModelState.AddModelError("", "Ошибка при сохранении: " + ex.Message);
                 if (ex.InnerException != null)
-                    ModelState.AddModelError("", "Внутренняя: " + ex.InnerException.Message);
+                    ModelState.AddModelError("", "Внутренняя ошибка: " + ex.InnerException.Message);
                 return View(model);
             }
         }
@@ -276,7 +272,7 @@ namespace PersonalCabinet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(long id, Application model, string submitType)
+        public async Task<IActionResult> Edit(long id, Application model, string submitType, List<IFormFile>? attachments)
         {
             if (id != model.Id) return BadRequest();
 
@@ -292,106 +288,147 @@ namespace PersonalCabinet.Controllers
                 TempData["ErrorMessage"] = "Редактирование недоступно.";
                 return RedirectToAction("Details", new { id });
             }
-            application.Title = model.Title;
-            application.Description = model.Description;
-            application.ObjectAddress = model.ObjectAddress;
-            application.RequestedPower = model.RequestedPower;
-            application.UpdatedAt = DateTime.UtcNow;
-            application.ApplicationReason = model.ApplicationReason;
-            application.EnergyDeviceName = model.EnergyDeviceName;
-            application.DeviceAddress = model.DeviceAddress;
-            application.PreviousPowerKw = model.PreviousPowerKw;
-            application.TotalPowerKw = model.TotalPowerKw;
-            application.ReliabilityCategory = model.ReliabilityCategory;
-            application.DesignDeadline = model.DesignDeadline.HasValue
-                ? DateTime.SpecifyKind(model.DesignDeadline.Value, DateTimeKind.Utc)
-                : null;
-            application.PaymentPlan = model.PaymentPlan;
-            application.GuarantyingSupplier = model.GuarantyingSupplier;
-            if (application.ApplicantType == "INDIVIDUAL")
+            ModelState.Remove("ApplicationNumber");
+            ModelState.Remove("Status");
+            ModelState.Remove("User");
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                application.LastName = model.LastName;
-                application.FirstName = model.FirstName;
-                application.MiddleName = model.MiddleName;
-                application.ResidenceAddress = model.ResidenceAddress;
-                application.Phone = model.Phone;
-                application.Inn = model.Inn;
-                application.PassportSeries = model.PassportSeries;
-                application.PassportNumber = model.PassportNumber;
-                application.PassportDate = model.PassportDate.HasValue
-                    ? DateTime.SpecifyKind(model.PassportDate.Value, DateTimeKind.Utc)
+                application.Title = model.Title;
+                application.Description = model.Description;
+                application.ObjectAddress = model.ObjectAddress;
+                application.RequestedPower = model.RequestedPower;
+                application.UpdatedAt = DateTime.UtcNow;
+                application.ApplicationReason = model.ApplicationReason;
+                application.EnergyDeviceName = model.EnergyDeviceName;
+                application.DeviceAddress = model.DeviceAddress;
+                application.PreviousPowerKw = model.PreviousPowerKw;
+                application.TotalPowerKw = model.TotalPowerKw;
+                application.ReliabilityCategory = model.ReliabilityCategory;
+                application.DesignDeadline = model.DesignDeadline.HasValue
+                    ? DateTime.SpecifyKind(model.DesignDeadline.Value, DateTimeKind.Utc)
                     : null;
-                application.SNILS = model.SNILS;
-                application.DateSNILS = model.DateSNILS.HasValue
-                    ? DateTime.SpecifyKind(model.DateSNILS.Value, DateTimeKind.Utc)
-                    : null;
-                application.PassportWhoIssued = model.PassportWhoIssued;
-                application.AddressRegistr = model.AddressRegistr;
-                ModelState.Remove("OrganizationFullName");
-                ModelState.Remove("OrganizationShortName");
-                ModelState.Remove("ContactPerson");
-            }
-            else if (application.ApplicantType == "ORGANIZATION")
-            {
-                application.OrganizationFullName = model.OrganizationFullName;
-                application.OrganizationShortName = model.OrganizationShortName;
-                application.ContactPerson = model.ContactPerson;
-                application.Phone = model.Phone;
-                application.Inn = model.Inn;
-                ModelState.Remove("LastName");
-                ModelState.Remove("FirstName");
-                ModelState.Remove("MiddleName");
-                ModelState.Remove("ResidenceAddress");
-                ModelState.Remove("PassportSeries");
-                ModelState.Remove("PassportNumber");
-                ModelState.Remove("PassportDate");
-                ModelState.Remove("PassportWhoIssued");
-                ModelState.Remove("AddressRegistr");
-                ModelState.Remove("SNILS");
-                ModelState.Remove("DateSNILS");
-            }
+                application.PaymentPlan = model.PaymentPlan;
+                application.GuarantyingSupplier = model.GuarantyingSupplier;
 
-            if (submitType == "submit")
-            {
-                string oldStatus = application.Status;
-                application.Status = "Submitted";
-                application.SubmittedAt = DateTime.UtcNow;
-                _context.ApplicationStatusHistories.Add(new ApplicationStatusHistory
+                if (application.ApplicantType == "INDIVIDUAL")
                 {
-                    ApplicationId = id,
-                    OldStatus = oldStatus == "Rejected" ? "Rejected" : "Draft",
-                    NewStatus = "Submitted",
-                    ChangedBy = userId,
-                    CreatedAt = DateTime.UtcNow,
-                    Comment = "Заявка отправлена на рассмотрение через редактирование"
-                });
-                await _hubContext.Clients.Group($"application_{id}").SendAsync("ReceiveMessage", new
+                    application.LastName = model.LastName;
+                    application.FirstName = model.FirstName;
+                    application.MiddleName = model.MiddleName;
+                    application.ResidenceAddress = model.ResidenceAddress;
+                    application.Phone = model.Phone;
+                    application.Inn = model.Inn;
+                    application.PassportSeries = model.PassportSeries;
+                    application.PassportNumber = model.PassportNumber;
+                    application.PassportDate = model.PassportDate.HasValue
+                        ? DateTime.SpecifyKind(model.PassportDate.Value, DateTimeKind.Utc)
+                        : null;
+                    application.SNILS = model.SNILS;
+                    application.DateSNILS = model.DateSNILS.HasValue
+                        ? DateTime.SpecifyKind(model.DateSNILS.Value, DateTimeKind.Utc)
+                        : null;
+                    application.PassportWhoIssued = model.PassportWhoIssued;
+                    application.AddressRegistr = model.AddressRegistr;
+                    ModelState.Remove("OrganizationFullName");
+                    ModelState.Remove("OrganizationShortName");
+                    ModelState.Remove("ContactPerson");
+                }
+                else if (application.ApplicantType == "ORGANIZATION")
                 {
-                    id = 0,
-                    senderName = "Система",
-                    messageText = "Заявка отправлена на рассмотрение",
-                    createdAt = DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm"),
-                    isOwn = false
-                });
+                    application.OrganizationFullName = model.OrganizationFullName;
+                    application.OrganizationShortName = model.OrganizationShortName;
+                    application.ContactPerson = model.ContactPerson;
+                    application.Phone = model.Phone;
+                    application.Inn = model.Inn;
+                    ModelState.Remove("LastName");
+                    ModelState.Remove("FirstName");
+                    ModelState.Remove("MiddleName");
+                    ModelState.Remove("ResidenceAddress");
+                    ModelState.Remove("PassportSeries");
+                    ModelState.Remove("PassportNumber");
+                    ModelState.Remove("PassportDate");
+                    ModelState.Remove("PassportWhoIssued");
+                    ModelState.Remove("AddressRegistr");
+                    ModelState.Remove("SNILS");
+                    ModelState.Remove("DateSNILS");
+                }
+                if (attachments != null && attachments.Any())
+                {
+                    foreach (var file in attachments)
+                    {
+                        if (file.Length == 0) continue;
+                        if (file.Length > 10 * 1024 * 1024)
+                            throw new Exception($"Файл {file.FileName} превышает 10 МБ");
 
-                TempData["SuccessMessage"] = "Заявка отправлена на рассмотрение!";
-            }
-            else
-            {
-                TempData["SuccessMessage"] = "Черновик сохранён.";
-            }
+                        var (storedName, relativePath) = await _fileService.SaveFileAsync(file, application.Id);
+                        if (string.IsNullOrEmpty(relativePath))
+                            throw new Exception($"Не удалось сохранить файл {file.FileName}");
 
-            if (application.Status == "Rejected" && submitType != "submit")
-            {
-                application.Status = "Draft";
+                        _context.Documents.Add(new Document
+                        {
+                            ApplicationId = application.Id,
+                            OriginalFileName = file.FileName,
+                            StoredFileName = storedName,
+                            FilePath = relativePath,
+                            MimeType = file.ContentType,
+                            UploadedBy = userId,
+                            UploadedAt = DateTime.UtcNow
+                        });
+                    }
+                    await _context.SaveChangesAsync();
+                }
+                if (submitType == "submit")
+                {
+                    string oldStatus = application.Status;
+                    application.Status = "Submitted";
+                    application.SubmittedAt = DateTime.UtcNow;
+                    _context.ApplicationStatusHistories.Add(new ApplicationStatusHistory
+                    {
+                        ApplicationId = id,
+                        OldStatus = oldStatus == "Rejected" ? "Rejected" : "Draft",
+                        NewStatus = "Submitted",
+                        ChangedBy = userId,
+                        CreatedAt = DateTime.UtcNow,
+                        Comment = "Заявка отправлена на рассмотрение через редактирование"
+                    });
+                    await _hubContext.Clients.Group($"application_{id}").SendAsync("ReceiveMessage", new
+                    {
+                        id = 0,
+                        senderName = "Система",
+                        messageText = "Заявка отправлена на рассмотрение",
+                        createdAt = DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm"),
+                        isOwn = false
+                    });
+                    TempData["SuccessMessage"] = "Заявка отправлена на рассмотрение!";
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = "Черновик сохранён.";
+                }
+
+                if (application.Status == "Rejected" && submitType != "submit")
+                    application.Status = "Draft";
+
+                if (!ModelState.IsValid)
+                {
+                    await transaction.RollbackAsync();
+                    return View(application);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return RedirectToAction("Details", new { id });
             }
-            if (!ModelState.IsValid)
+            catch (Exception ex)
             {
+                await transaction.RollbackAsync();
+                ModelState.AddModelError("", "Ошибка при сохранении: " + ex.Message);
+                if (ex.InnerException != null)
+                    ModelState.AddModelError("", "Внутренняя ошибка: " + ex.InnerException.Message);
                 return View(application);
             }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Details", new { id });
         }
 
         [HttpPost]

@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using PersonalCabinet.Hubs;
 using PersonalCabinet.Models;
-using PersonalCabinet.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
