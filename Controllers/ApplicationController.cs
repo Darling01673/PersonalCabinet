@@ -231,9 +231,11 @@ namespace PersonalCabinet.Controllers
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                ModelState.AddModelError("", "Ошибка: " + ex.Message);
-                if (ex.InnerException != null)
-                    ModelState.AddModelError("", "Внутренняя: " + ex.InnerException.Message);
+
+                var error = ex.ToString();
+
+                ModelState.AddModelError("", error);
+
                 return View(model);
             }
         }
