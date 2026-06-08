@@ -107,16 +107,33 @@ namespace PersonalCabinet.Controllers
             long? userId = GetCurrentUserId();
             if (userId == null) return Challenge();
 
-            ModelState.Remove("Attachments");
-            if (!ModelState.IsValid)
-                return View(model);
-
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var user = await _context.Users.FindAsync(userId.Value);
                 string applicantType = user?.UserType ?? "INDIVIDUAL";
-
+                if (applicantType == "ORGANIZATION")
+                {
+                    ModelState.Remove("LastName");
+                    ModelState.Remove("FirstName");
+                    ModelState.Remove("MiddleName");
+                    ModelState.Remove("ResidenceAddress");
+                    ModelState.Remove("PassportSeries");
+                    ModelState.Remove("PassportNumber");
+                    ModelState.Remove("PassportDate");
+                    ModelState.Remove("PassportWhoIssued");
+                    ModelState.Remove("AddressRegistr");
+                    ModelState.Remove("SNILS");
+                    ModelState.Remove("DateSNILS");
+                }
+                else
+                {
+                    ModelState.Remove("OrganizationFullName");
+                    ModelState.Remove("OrganizationShortName");
+                    ModelState.Remove("ContactPerson");
+                }
+                if (!ModelState.IsValid)
+                    return View(model);
                 var application = new Application
                 {
                     UserId = userId.Value,
@@ -161,23 +178,9 @@ namespace PersonalCabinet.Controllers
                         : null;
                     application.PassportWhoIssued = model.PassportWhoIssued;
                     application.AddressRegistr = model.AddressRegistr;
-                    ModelState.Remove("OrganizationFullName");
-                    ModelState.Remove("OrganizationShortName");
-                    ModelState.Remove("ContactPerson");
                 }
                 else if (applicantType == "ORGANIZATION")
                 {
-                    ModelState.Remove("LastName");
-                    ModelState.Remove("FirstName");
-                    ModelState.Remove("MiddleName");
-                    ModelState.Remove("ResidenceAddress");
-                    ModelState.Remove("PassportSeries");
-                    ModelState.Remove("PassportNumber");
-                    ModelState.Remove("PassportDate");
-                    ModelState.Remove("PassportWhoIssued");
-                    ModelState.Remove("AddressRegistr");
-                    ModelState.Remove("SNILS");
-                    ModelState.Remove("DateSNILS");
                     application.OrganizationFullName = model.OrganizationFullName;
                     application.OrganizationShortName = model.OrganizationShortName;
                     application.ContactPerson = model.ContactPerson;

@@ -12,8 +12,8 @@ using PersonalCabinet.Models;
 namespace PersonalCabinet.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260518173151_RemoveLoginFromUsers")]
-    partial class RemoveLoginFromUsers
+    [Migration("20260608144623_SyncModel")]
+    partial class SyncModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,35 +34,139 @@ namespace PersonalCabinet.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("AddressRegistr")
+                        .HasColumnType("text")
+                        .HasColumnName("AddressRegistr");
+
+                    b.Property<string>("ApplicantType")
+                        .HasColumnType("text")
+                        .HasColumnName("ApplicantType");
+
                     b.Property<string>("ApplicationNumber")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("application_number");
 
+                    b.Property<string>("ApplicationReason")
+                        .HasColumnType("text")
+                        .HasColumnName("ApplicationReason");
+
+                    b.Property<string>("ContactPerson")
+                        .HasColumnType("text")
+                        .HasColumnName("ContactPerson");
+
                     b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime?>("DateSNILS")
+                        .HasColumnType("date");
 
                     b.Property<string>("Description")
                         .HasColumnType("text")
                         .HasColumnName("description");
 
+                    b.Property<DateTime?>("DesignDeadline")
+                        .HasColumnType("date");
+
+                    b.Property<string>("DeviceAddress")
+                        .HasColumnType("text")
+                        .HasColumnName("DeviceAddress");
+
+                    b.Property<string>("EnergyDeviceName")
+                        .HasColumnType("text")
+                        .HasColumnName("EnergyDeviceName");
+
                     b.Property<string>("ExtraData")
                         .HasColumnType("jsonb")
                         .HasColumnName("extra_data");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("FirstName");
+
+                    b.Property<string>("GuarantyingSupplier")
+                        .HasColumnType("text")
+                        .HasColumnName("GuarantyingSupplier");
+
+                    b.Property<string>("Inn")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("Inn");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("LastName");
+
+                    b.Property<string>("MiddleName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("MiddleName");
 
                     b.Property<string>("ObjectAddress")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("object_address");
 
-                    b.Property<decimal?>("RequestedPower")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)")
+                    b.Property<string>("OrganizationFullName")
+                        .HasColumnType("text")
+                        .HasColumnName("OrganizationFullName");
+
+                    b.Property<string>("OrganizationShortName")
+                        .HasColumnType("text")
+                        .HasColumnName("OrganizationShortName");
+
+                    b.Property<DateTime?>("PassportDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("PassportNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("PassportNumber");
+
+                    b.Property<string>("PassportSeries")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("PassportSeries");
+
+                    b.Property<string>("PassportWhoIssued")
+                        .HasColumnType("text")
+                        .HasColumnName("PassportWhoIssued");
+
+                    b.Property<string>("PaymentPlan")
+                        .HasColumnType("text")
+                        .HasColumnName("PaymentPlan");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("Phone");
+
+                    b.Property<int?>("PreviousPowerKw")
+                        .HasColumnType("integer")
+                        .HasColumnName("PreviousPowerKw");
+
+                    b.Property<string>("ReliabilityCategory")
+                        .HasColumnType("text")
+                        .HasColumnName("ReliabilityCategory");
+
+                    b.Property<int?>("RequestedPower")
+                        .HasColumnType("integer")
                         .HasColumnName("requested_power");
+
+                    b.Property<string>("ResidenceAddress")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ResidenceAddress");
+
+                    b.Property<long?>("SNILS")
+                        .HasColumnType("bigint")
+                        .HasColumnName("SNILS");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -74,7 +178,7 @@ namespace PersonalCabinet.Migrations
 
                     b.Property<DateTime?>("SubmittedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("submitted_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -83,9 +187,13 @@ namespace PersonalCabinet.Migrations
                         .HasColumnType("text")
                         .HasColumnName("title");
 
+                    b.Property<int?>("TotalPowerKw")
+                        .HasColumnType("integer")
+                        .HasColumnName("TotalPowerKw");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -127,7 +235,7 @@ namespace PersonalCabinet.Migrations
 
                     b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -191,7 +299,7 @@ namespace PersonalCabinet.Migrations
 
                     b.Property<DateTime?>("UploadedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("uploaded_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -295,7 +403,7 @@ namespace PersonalCabinet.Migrations
 
                     b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -322,43 +430,6 @@ namespace PersonalCabinet.Migrations
                     b.HasIndex(new[] { "ApplicationId" }, "idx_messages_application_id");
 
                     b.ToTable("messages", (string)null);
-                });
-
-            modelBuilder.Entity("PersonalCabinet.Models.MessageAttachment", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("file_name");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("file_path");
-
-                    b.Property<long>("MessageId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("message_id");
-
-                    b.Property<DateTime?>("UploadedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
-                        .HasColumnName("uploaded_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.HasKey("Id")
-                        .HasName("message_attachments_pkey");
-
-                    b.HasIndex("MessageId");
-
-                    b.ToTable("message_attachments", (string)null);
                 });
 
             modelBuilder.Entity("PersonalCabinet.Models.OrganizationProfile", b =>
@@ -409,7 +480,7 @@ namespace PersonalCabinet.Migrations
 
                     b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -439,7 +510,7 @@ namespace PersonalCabinet.Migrations
 
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -458,6 +529,44 @@ namespace PersonalCabinet.Migrations
                         .IsUnique();
 
                     b.ToTable("users", (string)null);
+                });
+
+            modelBuilder.Entity("PersonalCabinet.Models.UserPersonalData", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Inn")
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.Property<DateTime?>("PassportDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("PassportNumber")
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)");
+
+                    b.Property<string>("PassportSeries")
+                        .HasMaxLength(4)
+                        .HasColumnType("character varying(4)");
+
+                    b.Property<string>("ResidenceAddress")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserPersonalData");
                 });
 
             modelBuilder.Entity("PersonalCabinet.Models.Application", b =>
@@ -549,18 +658,6 @@ namespace PersonalCabinet.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("PersonalCabinet.Models.MessageAttachment", b =>
-                {
-                    b.HasOne("PersonalCabinet.Models.Message", "Message")
-                        .WithMany("MessageAttachments")
-                        .HasForeignKey("MessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("message_attachments_message_id_fkey");
-
-                    b.Navigation("Message");
-                });
-
             modelBuilder.Entity("PersonalCabinet.Models.OrganizationProfile", b =>
                 {
                     b.HasOne("PersonalCabinet.Models.User", "User")
@@ -569,6 +666,17 @@ namespace PersonalCabinet.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("organization_profiles_user_id_fkey");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("PersonalCabinet.Models.UserPersonalData", b =>
+                {
+                    b.HasOne("PersonalCabinet.Models.User", "User")
+                        .WithOne("PersonalData")
+                        .HasForeignKey("PersonalCabinet.Models.UserPersonalData", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -587,11 +695,6 @@ namespace PersonalCabinet.Migrations
                     b.Navigation("Documents");
                 });
 
-            modelBuilder.Entity("PersonalCabinet.Models.Message", b =>
-                {
-                    b.Navigation("MessageAttachments");
-                });
-
             modelBuilder.Entity("PersonalCabinet.Models.User", b =>
                 {
                     b.Navigation("ApplicationStatusHistories");
@@ -605,6 +708,8 @@ namespace PersonalCabinet.Migrations
                     b.Navigation("Messages");
 
                     b.Navigation("OrganizationProfile");
+
+                    b.Navigation("PersonalData");
                 });
 #pragma warning restore 612, 618
         }

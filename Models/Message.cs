@@ -19,7 +19,5 @@ public partial class Message
 
     public virtual Application Application { get; set; } = null!;
 
-    public virtual ICollection<MessageAttachment> MessageAttachments { get; set; } = new List<MessageAttachment>();
-
     public virtual User Sender { get; set; } = null!;
 }

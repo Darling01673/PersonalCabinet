@@ -429,35 +429,6 @@ namespace PersonalCabinet.Migrations
                     b.ToTable("messages", (string)null);
                 });
 
-            modelBuilder.Entity("PersonalCabinet.Models.MessageAttachment", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("MessageId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("UploadedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MessageId");
-
-                    b.ToTable("MessageAttachment");
-                });
-
             modelBuilder.Entity("PersonalCabinet.Models.OrganizationProfile", b =>
                 {
                     b.Property<long>("Id")
@@ -684,17 +655,6 @@ namespace PersonalCabinet.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("PersonalCabinet.Models.MessageAttachment", b =>
-                {
-                    b.HasOne("PersonalCabinet.Models.Message", "Message")
-                        .WithMany("MessageAttachments")
-                        .HasForeignKey("MessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Message");
-                });
-
             modelBuilder.Entity("PersonalCabinet.Models.OrganizationProfile", b =>
                 {
                     b.HasOne("PersonalCabinet.Models.User", "User")
@@ -730,11 +690,6 @@ namespace PersonalCabinet.Migrations
             modelBuilder.Entity("PersonalCabinet.Models.DocumentType", b =>
                 {
                     b.Navigation("Documents");
-                });
-
-            modelBuilder.Entity("PersonalCabinet.Models.Message", b =>
-                {
-                    b.Navigation("MessageAttachments");
                 });
 
             modelBuilder.Entity("PersonalCabinet.Models.User", b =>

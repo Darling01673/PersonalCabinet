@@ -5,7 +5,7 @@
 namespace PersonalCabinet.Migrations
 {
     /// <inheritdoc />
-    public partial class AAA : Migration
+    public partial class SyncModel : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
