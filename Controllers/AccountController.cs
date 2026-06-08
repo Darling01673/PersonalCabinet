@@ -27,30 +27,28 @@ namespace PersonalCabinet.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            // Валидация
             if (string.IsNullOrWhiteSpace(model.Phone))
-            {
                 ModelState.AddModelError("Phone", "Поле Телефон обязательно");
-            }
             if (string.IsNullOrWhiteSpace(model.Password))
-            {
                 ModelState.AddModelError("Password", "Поле Пароль обязательно");
-            }
             if (string.IsNullOrWhiteSpace(model.Email))
-            {
                 ModelState.AddModelError("Email", "Поле Email обязательно");
-            }
+
             string consent = Request.Form["PersonalDataConsent"];
             if (consent != "true" && consent != "on" && consent != "True")
             {
                 ModelState.AddModelError("", "Необходимо согласие на обработку персональных данных");
                 return View(model);
             }
+
             bool emailExists = await _context.Users.AnyAsync(u => u.Email == model.Email);
             if (emailExists)
             {
                 ModelState.AddModelError("Email", "Пользователь с таким email уже существует");
                 return View(model);
             }
+
             if (model.UserType == "Organization")
             {
                 if (string.IsNullOrWhiteSpace(model.OrgFullName))
@@ -63,43 +61,44 @@ namespace PersonalCabinet.Controllers
                 if (string.IsNullOrWhiteSpace(model.FullName))
                     ModelState.AddModelError("FullName", "ФИО обязательно");
             }
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
 
-            User user = new User();
-            user.Email = model.Email;
-            user.Phone = model.Phone;
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
-            user.Role = "USER";
-            user.UserType = MapUserType(model.UserType);
-            user.CreatedAt = DateTime.Now;
-            user.UpdatedAt = DateTime.Now;
+            if (!ModelState.IsValid)
+                return View(model);
+
+            User user = new User
+            {
+                Email = model.Email,
+                Phone = model.Phone,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
+                Role = "USER",
+                UserType = MapUserType(model.UserType),
+                CreatedAt = DateTime.UtcNow, 
+                UpdatedAt = DateTime.UtcNow  
+            };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
             if (model.UserType == "Organization")
             {
-                OrganizationProfile orgProfile = new OrganizationProfile();
-                orgProfile.UserId = user.Id;
-                orgProfile.FullName = model.OrgFullName;
-                orgProfile.ShortName = model.OrgShortName;
-                orgProfile.ContactPerson = model.ContactPerson;
-                _context.OrganizationProfiles.Add(orgProfile);
+                _context.OrganizationProfiles.Add(new OrganizationProfile
+                {
+                    UserId = user.Id,
+                    FullName = model.OrgFullName,
+                    ShortName = model.OrgShortName,
+                    ContactPerson = model.ContactPerson
+                });
             }
             else
             {
-                IndividualProfile indProfile = new IndividualProfile();
-                indProfile.UserId = user.Id;
-
-                string[] parts = model.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length > 0) indProfile.LastName = parts[0];
-                if (parts.Length > 1) indProfile.FirstName = parts[1];
-                if (parts.Length > 2) indProfile.MiddleName = parts[2];
-
-                _context.IndividualProfiles.Add(indProfile);
+                var parts = model.FullName?.Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+                _context.IndividualProfiles.Add(new IndividualProfile
+                {
+                    UserId = user.Id,
+                    LastName = parts.Length > 0 ? parts[0] : "",
+                    FirstName = parts.Length > 1 ? parts[1] : "",
+                    MiddleName = parts.Length > 2 ? parts[2] : ""
+                });
             }
             await _context.SaveChangesAsync();
 
@@ -122,19 +121,10 @@ namespace PersonalCabinet.Controllers
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
 
-            User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
-            if (user == null)
-            {
-                ModelState.AddModelError("", "Неверный email или пароль");
-                return View(model);
-            }
-
-            bool passwordOk = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
-            if (!passwordOk)
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
             {
                 ModelState.AddModelError("", "Неверный email или пароль");
                 return View(model);
@@ -159,22 +149,21 @@ namespace PersonalCabinet.Controllers
         public async Task<IActionResult> Profile()
         {
             long userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            User user = await _context.Users
+            var user = await _context.Users
                 .Include(u => u.IndividualProfile)
                 .Include(u => u.OrganizationProfile)
                 .Include(u => u.PersonalData)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
-            if (user == null)
-            {
-                return NotFound();
-            }
+            if (user == null) return NotFound();
 
-            ProfileViewModel model = new ProfileViewModel();
-            model.Id = user.Id;
-            model.Email = user.Email;
-            model.Phone = user.Phone;
-            model.UserType = user.UserType;
+            var model = new ProfileViewModel
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Phone = user.Phone,
+                UserType = user.UserType
+            };
 
             if (user.UserType == "INDIVIDUAL" && user.IndividualProfile != null)
             {
@@ -219,8 +208,8 @@ namespace PersonalCabinet.Controllers
 
             if (!ModelState.IsValid)
             {
-                var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                TempData["ErrorMessage"] = "Ошибка валидации: " + errors;
+                TempData["ErrorMessage"] = "Ошибка валидации: " +
+                    string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
                 return View(model);
             }
 
@@ -236,7 +225,7 @@ namespace PersonalCabinet.Controllers
 
                 user.Email = model.Email;
                 user.Phone = model.Phone;
-                user.UpdatedAt = DateTime.Now;
+                user.UpdatedAt = DateTime.UtcNow;
 
                 if (user.UserType == "INDIVIDUAL")
                 {
@@ -299,19 +288,13 @@ namespace PersonalCabinet.Controllers
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
 
             long userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            User user = await _context.Users.FindAsync(userId);
-            if (user == null)
-            {
-                return NotFound();
-            }
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound();
 
-            bool currentOk = BCrypt.Net.BCrypt.Verify(model.CurrentPassword, user.PasswordHash);
-            if (!currentOk)
+            if (!BCrypt.Net.BCrypt.Verify(model.CurrentPassword, user.PasswordHash))
             {
                 ModelState.AddModelError("", "Текущий пароль введён неверно");
                 return View(model);
@@ -324,7 +307,7 @@ namespace PersonalCabinet.Controllers
             }
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
-            user.UpdatedAt = DateTime.Now;
+            user.UpdatedAt = DateTime.UtcNow; 
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Пароль успешно изменён";
@@ -335,41 +318,37 @@ namespace PersonalCabinet.Controllers
         public async Task<IActionResult> GetPersonalData()
         {
             long userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            User user = await _context.Users
+            var user = await _context.Users
                 .Include(u => u.IndividualProfile)
                 .Include(u => u.PersonalData)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
-            if (user == null)
-            {
-                return NotFound();
-            }
+            if (user == null) return NotFound();
 
-            var result = new
+            return Ok(new
             {
-                LastName = user.IndividualProfile?.LastName,
-                FirstName = user.IndividualProfile?.FirstName,
-                MiddleName = user.IndividualProfile?.MiddleName,
-                Phone = user.Phone,
-                ResidenceAddress = user.PersonalData?.ResidenceAddress,
-                Inn = user.PersonalData?.Inn,
-                PassportSeries = user.PersonalData?.PassportSeries,
-                PassportNumber = user.PersonalData?.PassportNumber,
-                PassportDate = user.PersonalData?.PassportDate?.ToString("yyyy-MM-dd")
-            };
-            return Ok(result);
+                lastName = user.IndividualProfile?.LastName,
+                firstName = user.IndividualProfile?.FirstName,
+                middleName = user.IndividualProfile?.MiddleName,
+                phone = user.Phone,
+                residenceAddress = user.PersonalData?.ResidenceAddress,
+                inn = user.PersonalData?.Inn,
+                passportSeries = user.PersonalData?.PassportSeries,
+                passportNumber = user.PersonalData?.PassportNumber,
+                passportDate = user.PersonalData?.PassportDate?.ToString("yyyy-MM-dd")
+            });
         }
 
         private async Task SignInAsync(User user, bool isPersistent = false)
         {
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        new Claim(ClaimTypes.Name, user.Email),
-        new Claim(ClaimTypes.Email, user.Email),
-        new Claim(ClaimTypes.Role, user.Role),
-        new Claim("UserType", user.UserType)
-    };
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim("UserType", user.UserType)
+            };
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 
@@ -384,11 +363,14 @@ namespace PersonalCabinet.Controllers
 
         private string MapUserType(string formType)
         {
-            if (formType == "Individual") return "INDIVIDUAL";
-            if (formType == "IndividualEntrepreneur") return "ENTREPRENEUR";
-            if (formType == "Organization") return "ORGANIZATION";
-            if (formType == "Representative") return "REPRESENTATIVE";
-            return "INDIVIDUAL";
+            return formType switch
+            {
+                "Individual" => "INDIVIDUAL",
+                "IndividualEntrepreneur" => "ENTREPRENEUR",
+                "Organization" => "ORGANIZATION",
+                "Representative" => "REPRESENTATIVE",
+                _ => "INDIVIDUAL"
+            };
         }
     }
 }
