@@ -27,34 +27,42 @@ namespace PersonalCabinet.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            ModelState.Remove("FullName");
+            ModelState.Remove("OrgFullName");
+            ModelState.Remove("OrgShortName");
+            ModelState.Remove("ContactPerson");
             if (string.IsNullOrWhiteSpace(model.Phone))
                 ModelState.AddModelError("Phone", "Поле Телефон обязательно");
             if (string.IsNullOrWhiteSpace(model.Password))
                 ModelState.AddModelError("Password", "Поле Пароль обязательно");
             if (string.IsNullOrWhiteSpace(model.Email))
                 ModelState.AddModelError("Email", "Поле Email обязательно");
-
             string consent = Request.Form["PersonalDataConsent"];
             if (consent != "true" && consent != "on" && consent != "True")
             {
                 ModelState.AddModelError("", "Необходимо согласие на обработку персональных данных");
                 return View(model);
             }
-
             bool emailExists = await _context.Users.AnyAsync(u => u.Email == model.Email);
             if (emailExists)
             {
                 ModelState.AddModelError("Email", "Пользователь с таким email уже существует");
                 return View(model);
             }
-
+            string confirmPassword = Request.Form["ConfirmPassword"];
+            if (model.Password != confirmPassword)
+            {
+                ModelState.AddModelError("ConfirmPassword", "Пароли не совпадают");
+                return View(model);
+            }
             if (model.UserType == "Organization")
             {
-                ModelState.Remove("FullName");
                 if (string.IsNullOrWhiteSpace(model.OrgFullName))
                     ModelState.AddModelError("OrgFullName", "Полное наименование обязательно");
                 if (string.IsNullOrWhiteSpace(model.OrgShortName))
                     ModelState.AddModelError("OrgShortName", "Сокращённое наименование обязательно");
+                if (string.IsNullOrWhiteSpace(model.ContactPerson))
+                    ModelState.AddModelError("ContactPerson", "Контактное лицо обязательно");
             }
             else
             {
@@ -64,7 +72,6 @@ namespace PersonalCabinet.Controllers
 
             if (!ModelState.IsValid)
                 return View(model);
-
             User user = new User
             {
                 Email = model.Email,
@@ -72,13 +79,12 @@ namespace PersonalCabinet.Controllers
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
                 Role = "USER",
                 UserType = MapUserType(model.UserType),
-                CreatedAt = DateTime.UtcNow, 
-                UpdatedAt = DateTime.UtcNow  
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-
             if (model.UserType == "Organization")
             {
                 _context.OrganizationProfiles.Add(new OrganizationProfile
@@ -101,9 +107,7 @@ namespace PersonalCabinet.Controllers
                 });
             }
             await _context.SaveChangesAsync();
-
             await SignInAsync(user);
-
             if (user.Role == "Admin")
                 return RedirectToAction("MainMenuAdmin", "Admin");
             else

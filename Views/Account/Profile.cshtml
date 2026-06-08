@@ -17,15 +17,6 @@
     <div class="card">
         <h2><i class="bi bi-person-circle"></i> Мой профиль</h2>
 
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="alert-success">@TempData["SuccessMessage"]</div>
-            }
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <div class="alert-error">@TempData["ErrorMessage"]</div>
-            }
-
         <form method="post" asp-action="Profile" id="profileForm">
             <input type="hidden" name="Id" value="@Model.Id" />
             <input type="hidden" name="UserType" value="@Model.UserType" />

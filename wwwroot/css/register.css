@@ -204,3 +204,23 @@ body {
         .reg-footer a:hover {
             text-decoration: underline;
         }
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-right: 40px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d;
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+}
