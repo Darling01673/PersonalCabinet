@@ -236,7 +236,7 @@
                 <div class="mb-4">
                     <label class="form-label-cabinet">Гарантирующий поставщик (энергосбытовая организация)</label>
                     <input type="text" name="GuarantyingSupplier" class="form-control-cabinet"
-                           placeholder="Например: АО «Энергосбыт», ООО «РМ-Энерго»"
+
                            value="@Model.GuarantyingSupplier" />
                 </div>
 
@@ -402,7 +402,6 @@
                 setFieldValue('PassportSeries', data.passportSeries);
                 setFieldValue('PassportNumber', data.passportNumber);
                 setFieldValue('PassportDate', data.passportDate);
-                // Также можно заполнить СНИЛС, если есть
                 if (data.snils) setFieldValue('SNILS', data.snils);
                 if (data.dateSNILS) setFieldValue('DateSNILS', data.dateSNILS);
             }

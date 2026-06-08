@@ -97,7 +97,7 @@ namespace PersonalCabinet.Controllers
         public IActionResult Create()
         {
             var model = new CreateApplicationViewModel();
-            model.PassportDate = DateTime.Now;
+            // Убрано присваивание PassportDate = DateTime.Now
             return View(model);
         }
 
@@ -121,19 +121,19 @@ namespace PersonalCabinet.Controllers
                 var application = new Application
                 {
                     UserId = userId.Value,
-                    Title = $"Заявка от {DateTime.Now:dd.MM.yyyy}",
+                    Title = $"Заявка от {DateTime.UtcNow:dd.MM.yyyy}",
                     ObjectAddress = model.DeviceAddress,
                     RequestedPower = model.RequestedPower,
                     Status = "Draft",
                     ApplicationNumber = GenerateApplicationNumber(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
                     EnergyDeviceName = model.EnergyDeviceName,
                     DeviceAddress = model.DeviceAddress,
                     PreviousPowerKw = model.PreviousPowerKw,
                     TotalPowerKw = model.TotalPowerKw,
                     ReliabilityCategory = model.ReliabilityCategory,
-                    DesignDeadline = model.DesignDeadline,
+                    DesignDeadline = ConvertToUtc(model.DesignDeadline),
                     ApplicationReason = model.ApplicationReason,
                     Description = model.Description,
                     PaymentPlan = model.PaymentPlan,
@@ -150,9 +150,9 @@ namespace PersonalCabinet.Controllers
                     application.Inn = model.Inn;
                     application.PassportSeries = model.PassportSeries;
                     application.PassportNumber = model.PassportNumber;
-                    application.PassportDate = model.PassportDate;
+                    application.PassportDate = ConvertToUtc(model.PassportDate);
                     application.SNILS = model.SNILS;
-                    application.DateSNILS = model.DateSNILS;
+                    application.DateSNILS = ConvertToUtc(model.DateSNILS);
                     application.PassportWhoIssued = model.PassportWhoIssued;
                     application.AddressRegistr = model.AddressRegistr;
                 }
@@ -181,7 +181,7 @@ namespace PersonalCabinet.Controllers
                             FilePath = relativePath,
                             MimeType = file.ContentType,
                             UploadedBy = userId,
-                            UploadedAt = DateTime.Now
+                            UploadedAt = DateTime.UtcNow
                         });
                     }
                     await _context.SaveChangesAsync();
@@ -191,14 +191,14 @@ namespace PersonalCabinet.Controllers
                 if (submitType == "submit")
                 {
                     application.Status = "Submitted";
-                    application.SubmittedAt = DateTime.Now;
+                    application.SubmittedAt = DateTime.UtcNow;
                     _context.ApplicationStatusHistories.Add(new ApplicationStatusHistory
                     {
                         ApplicationId = application.Id,
                         OldStatus = "Draft",
                         NewStatus = "Submitted",
                         ChangedBy = userId,
-                        CreatedAt = DateTime.Now,
+                        CreatedAt = DateTime.UtcNow,
                         Comment = "Заявка подана через форму создания"
                     });
                     await _context.SaveChangesAsync();
@@ -207,7 +207,7 @@ namespace PersonalCabinet.Controllers
                         id = 0,
                         senderName = "Система",
                         messageText = "Заявка успешно подана",
-                        createdAt = DateTime.Now.ToString("dd.MM.yyyy HH:mm"),
+                        createdAt = DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm"),
                         isOwn = false
                     });
 
@@ -272,14 +272,14 @@ namespace PersonalCabinet.Controllers
             application.Description = model.Description;
             application.ObjectAddress = model.ObjectAddress;
             application.RequestedPower = model.RequestedPower;
-            application.UpdatedAt = DateTime.Now;
+            application.UpdatedAt = DateTime.UtcNow;
             application.ApplicationReason = model.ApplicationReason;
             application.EnergyDeviceName = model.EnergyDeviceName;
             application.DeviceAddress = model.DeviceAddress;
             application.PreviousPowerKw = model.PreviousPowerKw;
             application.TotalPowerKw = model.TotalPowerKw;
             application.ReliabilityCategory = model.ReliabilityCategory;
-            application.DesignDeadline = model.DesignDeadline;
+            application.DesignDeadline = ConvertToUtc(model.DesignDeadline);
             application.PaymentPlan = model.PaymentPlan;
             application.GuarantyingSupplier = model.GuarantyingSupplier;
             if (application.ApplicantType == "INDIVIDUAL")
@@ -292,9 +292,9 @@ namespace PersonalCabinet.Controllers
                 application.Inn = model.Inn;
                 application.PassportSeries = model.PassportSeries;
                 application.PassportNumber = model.PassportNumber;
-                application.PassportDate = model.PassportDate;
+                application.PassportDate = ConvertToUtc(model.PassportDate);
                 application.SNILS = model.SNILS;
-                application.DateSNILS = model.DateSNILS;
+                application.DateSNILS = ConvertToUtc(model.DateSNILS);
                 application.PassportWhoIssued = model.PassportWhoIssued;
                 application.AddressRegistr = model.AddressRegistr;
             }
@@ -309,15 +309,16 @@ namespace PersonalCabinet.Controllers
 
             if (submitType == "submit")
             {
+                string oldStatus = application.Status;
                 application.Status = "Submitted";
-                application.SubmittedAt = DateTime.Now;
+                application.SubmittedAt = DateTime.UtcNow;
                 _context.ApplicationStatusHistories.Add(new ApplicationStatusHistory
                 {
                     ApplicationId = id,
-                    OldStatus = application.Status == "Rejected" ? "Rejected" : "Draft",
+                    OldStatus = oldStatus == "Rejected" ? "Rejected" : "Draft",
                     NewStatus = "Submitted",
                     ChangedBy = userId,
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     Comment = "Заявка отправлена на рассмотрение через редактирование"
                 });
                 await _hubContext.Clients.Group($"application_{id}").SendAsync("ReceiveMessage", new
@@ -325,7 +326,7 @@ namespace PersonalCabinet.Controllers
                     id = 0,
                     senderName = "Система",
                     messageText = "Заявка отправлена на рассмотрение",
-                    createdAt = DateTime.Now.ToString("dd.MM.yyyy HH:mm"),
+                    createdAt = DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm"),
                     isOwn = false
                 });
 
@@ -382,7 +383,7 @@ namespace PersonalCabinet.Controllers
                 FilePath = relativePath,
                 MimeType = file.ContentType,
                 UploadedBy = userId,
-                UploadedAt = DateTime.Now
+                UploadedAt = DateTime.UtcNow
             };
             _context.Documents.Add(document);
             await _context.SaveChangesAsync();
@@ -429,8 +430,8 @@ namespace PersonalCabinet.Controllers
             }
 
             application.Status = "Submitted";
-            application.SubmittedAt = DateTime.Now;
-            application.UpdatedAt = DateTime.Now;
+            application.SubmittedAt = DateTime.UtcNow;
+            application.UpdatedAt = DateTime.UtcNow;
 
             _context.ApplicationStatusHistories.Add(new ApplicationStatusHistory
             {
@@ -438,7 +439,7 @@ namespace PersonalCabinet.Controllers
                 OldStatus = "Draft",
                 NewStatus = "Submitted",
                 ChangedBy = userId,
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 Comment = "Заявка отправлена на рассмотрение"
             });
             await _context.SaveChangesAsync();
@@ -447,7 +448,7 @@ namespace PersonalCabinet.Controllers
                 id = 0,
                 senderName = "Система",
                 messageText = "Заявка отправлена на рассмотрение",
-                createdAt = DateTime.Now.ToString("dd.MM.yyyy HH:mm"),
+                createdAt = DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm"),
                 isOwn = false
             });
 
@@ -510,7 +511,7 @@ namespace PersonalCabinet.Controllers
 
         private string GenerateApplicationNumber()
         {
-            int year = DateTime.Now.Year;
+            int year = DateTime.UtcNow.Year;
             int seq = 1;
             string number;
             do
@@ -521,5 +522,10 @@ namespace PersonalCabinet.Controllers
             return number;
         }
 
+        private DateTime? ConvertToUtc(DateTime? date)
+        {
+            if (!date.HasValue) return null;
+            return DateTime.SpecifyKind(date.Value, DateTimeKind.Utc);
+        }
     }
 }
