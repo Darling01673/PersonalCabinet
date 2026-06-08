@@ -125,17 +125,15 @@ namespace PersonalCabinet.Controllers
                     RequestedPower = model.RequestedPower,
                     Status = "Draft",
                     ApplicationNumber = GenerateApplicationNumber(),
-                    // ----- Временные метки: UTC время, но Kind = Unspecified -----
-                    CreatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified),
-                    UpdatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
                     EnergyDeviceName = model.EnergyDeviceName,
                     DeviceAddress = model.DeviceAddress,
                     PreviousPowerKw = model.PreviousPowerKw,
                     TotalPowerKw = model.TotalPowerKw,
                     ReliabilityCategory = model.ReliabilityCategory,
-                    // ----- Даты без времени (date) -----
                     DesignDeadline = model.DesignDeadline.HasValue
-                        ? DateTime.SpecifyKind(model.DesignDeadline.Value, DateTimeKind.Unspecified)
+                        ? DateTime.SpecifyKind(model.DesignDeadline.Value, DateTimeKind.Utc)
                         : null,
                     ApplicationReason = model.ApplicationReason,
                     Description = model.Description,
@@ -155,11 +153,11 @@ namespace PersonalCabinet.Controllers
                     application.PassportSeries = model.PassportSeries;
                     application.PassportNumber = model.PassportNumber;
                     application.PassportDate = model.PassportDate.HasValue
-                        ? DateTime.SpecifyKind(model.PassportDate.Value, DateTimeKind.Unspecified)
+                        ? DateTime.SpecifyKind(model.PassportDate.Value, DateTimeKind.Utc)
                         : null;
                     application.SNILS = model.SNILS;
                     application.DateSNILS = model.DateSNILS.HasValue
-                        ? DateTime.SpecifyKind(model.DateSNILS.Value, DateTimeKind.Unspecified)
+                        ? DateTime.SpecifyKind(model.DateSNILS.Value, DateTimeKind.Utc)
                         : null;
                     application.PassportWhoIssued = model.PassportWhoIssued;
                     application.AddressRegistr = model.AddressRegistr;
@@ -190,7 +188,7 @@ namespace PersonalCabinet.Controllers
                             FilePath = relativePath,
                             MimeType = file.ContentType,
                             UploadedBy = userId,
-                            UploadedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified)
+                            UploadedAt = DateTime.UtcNow
                         });
                     }
                     await _context.SaveChangesAsync();
@@ -200,14 +198,14 @@ namespace PersonalCabinet.Controllers
                 if (submitType == "submit")
                 {
                     application.Status = "Submitted";
-                    application.SubmittedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
+                    application.SubmittedAt = DateTime.UtcNow;
                     _context.ApplicationStatusHistories.Add(new ApplicationStatusHistory
                     {
                         ApplicationId = application.Id,
                         OldStatus = "Draft",
                         NewStatus = "Submitted",
                         ChangedBy = userId,
-                        CreatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified),
+                        CreatedAt = DateTime.UtcNow,
                         Comment = "Заявка подана через форму создания"
                     });
                     await _context.SaveChangesAsync();
@@ -282,7 +280,7 @@ namespace PersonalCabinet.Controllers
             application.Description = model.Description;
             application.ObjectAddress = model.ObjectAddress;
             application.RequestedPower = model.RequestedPower;
-            application.UpdatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
+            application.UpdatedAt = DateTime.UtcNow;
             application.ApplicationReason = model.ApplicationReason;
             application.EnergyDeviceName = model.EnergyDeviceName;
             application.DeviceAddress = model.DeviceAddress;
@@ -290,7 +288,7 @@ namespace PersonalCabinet.Controllers
             application.TotalPowerKw = model.TotalPowerKw;
             application.ReliabilityCategory = model.ReliabilityCategory;
             application.DesignDeadline = model.DesignDeadline.HasValue
-                ? DateTime.SpecifyKind(model.DesignDeadline.Value, DateTimeKind.Unspecified)
+                ? DateTime.SpecifyKind(model.DesignDeadline.Value, DateTimeKind.Utc)
                 : null;
             application.PaymentPlan = model.PaymentPlan;
             application.GuarantyingSupplier = model.GuarantyingSupplier;
@@ -306,11 +304,11 @@ namespace PersonalCabinet.Controllers
                 application.PassportSeries = model.PassportSeries;
                 application.PassportNumber = model.PassportNumber;
                 application.PassportDate = model.PassportDate.HasValue
-                    ? DateTime.SpecifyKind(model.PassportDate.Value, DateTimeKind.Unspecified)
+                    ? DateTime.SpecifyKind(model.PassportDate.Value, DateTimeKind.Utc)
                     : null;
                 application.SNILS = model.SNILS;
                 application.DateSNILS = model.DateSNILS.HasValue
-                    ? DateTime.SpecifyKind(model.DateSNILS.Value, DateTimeKind.Unspecified)
+                    ? DateTime.SpecifyKind(model.DateSNILS.Value, DateTimeKind.Utc)
                     : null;
                 application.PassportWhoIssued = model.PassportWhoIssued;
                 application.AddressRegistr = model.AddressRegistr;
@@ -328,14 +326,14 @@ namespace PersonalCabinet.Controllers
             {
                 string oldStatus = application.Status;
                 application.Status = "Submitted";
-                application.SubmittedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
+                application.SubmittedAt = DateTime.UtcNow;
                 _context.ApplicationStatusHistories.Add(new ApplicationStatusHistory
                 {
                     ApplicationId = id,
                     OldStatus = oldStatus == "Rejected" ? "Rejected" : "Draft",
                     NewStatus = "Submitted",
                     ChangedBy = userId,
-                    CreatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified),
+                    CreatedAt = DateTime.UtcNow,
                     Comment = "Заявка отправлена на рассмотрение через редактирование"
                 });
                 await _hubContext.Clients.Group($"application_{id}").SendAsync("ReceiveMessage", new
@@ -401,7 +399,7 @@ namespace PersonalCabinet.Controllers
                 FilePath = relativePath,
                 MimeType = file.ContentType,
                 UploadedBy = userId,
-                UploadedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified)
+                UploadedAt = DateTime.UtcNow
             };
             _context.Documents.Add(document);
             await _context.SaveChangesAsync();
@@ -448,8 +446,8 @@ namespace PersonalCabinet.Controllers
             }
 
             application.Status = "Submitted";
-            application.SubmittedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
-            application.UpdatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
+            application.SubmittedAt = DateTime.UtcNow;
+            application.UpdatedAt = DateTime.UtcNow;
 
             _context.ApplicationStatusHistories.Add(new ApplicationStatusHistory
             {
@@ -457,7 +455,7 @@ namespace PersonalCabinet.Controllers
                 OldStatus = "Draft",
                 NewStatus = "Submitted",
                 ChangedBy = userId,
-                CreatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified),
+                CreatedAt = DateTime.UtcNow,
                 Comment = "Заявка отправлена на рассмотрение"
             });
             await _context.SaveChangesAsync();

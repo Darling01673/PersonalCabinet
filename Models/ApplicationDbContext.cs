@@ -32,8 +32,6 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<Message> Messages { get; set; }
 
-    public virtual DbSet<MessageAttachment> MessageAttachments { get; set; }
-
     public virtual DbSet<OrganizationProfile> OrganizationProfiles { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -64,11 +62,9 @@ public partial class ApplicationDbContext : DbContext
         modelBuilder.Entity<Application>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("applications_pkey");
-
             entity.ToTable("applications");
 
             entity.HasIndex(e => e.ApplicationNumber, "applications_application_number_key").IsUnique();
-
             entity.HasIndex(e => e.UserId, "idx_applications_user_id");
 
             entity.Property(e => e.Id).HasColumnName("id");
@@ -77,7 +73,7 @@ public partial class ApplicationDbContext : DbContext
                 .HasColumnName("application_number");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.ExtraData)
@@ -85,7 +81,6 @@ public partial class ApplicationDbContext : DbContext
                 .HasColumnName("extra_data");
             entity.Property(e => e.ObjectAddress).HasColumnName("object_address");
             entity.Property(e => e.RequestedPower)
-                .HasPrecision(10, 2)
                 .HasColumnName("requested_power");
             entity.Property(e => e.Status)
                 .HasMaxLength(30)
@@ -94,20 +89,43 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.DesignDeadline).HasColumnType("date");
             entity.Property(e => e.SubmittedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("submitted_at");
             entity.Property(e => e.Title).HasColumnName("title");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("updated_at");
             entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.EnergyDeviceName).HasColumnName("EnergyDeviceName");
+            entity.Property(e => e.DeviceAddress).HasColumnName("DeviceAddress");
+            entity.Property(e => e.PreviousPowerKw).HasColumnName("PreviousPowerKw"); 
+            entity.Property(e => e.TotalPowerKw).HasColumnName("TotalPowerKw");     
+            entity.Property(e => e.ReliabilityCategory).HasColumnName("ReliabilityCategory");
+            entity.Property(e => e.ApplicationReason).HasColumnName("ApplicationReason");
+            entity.Property(e => e.LastName).HasColumnName("LastName");
+            entity.Property(e => e.FirstName).HasColumnName("FirstName");
+            entity.Property(e => e.MiddleName).HasColumnName("MiddleName");
+            entity.Property(e => e.ResidenceAddress).HasColumnName("ResidenceAddress");
+            entity.Property(e => e.Phone).HasColumnName("Phone");
+            entity.Property(e => e.Inn).HasColumnName("Inn");
+            entity.Property(e => e.PassportSeries).HasColumnName("PassportSeries");
+            entity.Property(e => e.PassportNumber).HasColumnName("PassportNumber");
+            entity.Property(e => e.PassportDate).HasColumnType("date");
+            entity.Property(e => e.SNILS).HasColumnName("SNILS");
+            entity.Property(e => e.DateSNILS).HasColumnType("date");  
+            entity.Property(e => e.PassportWhoIssued).HasColumnName("PassportWhoIssued");
+            entity.Property(e => e.AddressRegistr).HasColumnName("AddressRegistr");
+            entity.Property(e => e.PaymentPlan).HasColumnName("PaymentPlan");
+            entity.Property(e => e.GuarantyingSupplier).HasColumnName("GuarantyingSupplier");
+            entity.Property(e => e.OrganizationFullName).HasColumnName("OrganizationFullName");
+            entity.Property(e => e.OrganizationShortName).HasColumnName("OrganizationShortName");
+            entity.Property(e => e.ContactPerson).HasColumnName("ContactPerson");
+            entity.Property(e => e.ApplicantType).HasColumnName("ApplicantType");
 
             entity.HasOne(d => d.User).WithMany(p => p.Applications)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("applications_user_id_fkey");
-            entity.Property(e => e.PassportDate).HasColumnType("date");
-
         });
         modelBuilder.Entity<UserPersonalData>(entity =>
         {
@@ -137,7 +155,7 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.Comment).HasColumnName("comment");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.NewStatus)
                 .HasMaxLength(30)
@@ -174,7 +192,7 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.StoredFileName).HasColumnName("stored_file_name");
             entity.Property(e => e.UploadedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("uploaded_at");
             entity.Property(e => e.UploadedBy).HasColumnName("uploaded_by");
 
@@ -245,7 +263,7 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.ApplicationId).HasColumnName("application_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.IsRead)
                 .HasDefaultValue(false)
@@ -261,26 +279,6 @@ public partial class ApplicationDbContext : DbContext
                 .HasForeignKey(d => d.SenderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("messages_sender_id_fkey");
-        });
-
-        modelBuilder.Entity<MessageAttachment>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("message_attachments_pkey");
-
-            entity.ToTable("message_attachments");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.FileName).HasColumnName("file_name");
-            entity.Property(e => e.FilePath).HasColumnName("file_path");
-            entity.Property(e => e.MessageId).HasColumnName("message_id");
-            entity.Property(e => e.UploadedAt)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("uploaded_at");
-
-            entity.HasOne(d => d.Message).WithMany(p => p.MessageAttachments)
-                .HasForeignKey(d => d.MessageId)
-                .HasConstraintName("message_attachments_message_id_fkey");
         });
 
         modelBuilder.Entity<OrganizationProfile>(entity =>
@@ -320,7 +318,7 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.Email)
                 .HasMaxLength(255)
@@ -335,7 +333,7 @@ public partial class ApplicationDbContext : DbContext
                 .HasColumnName("role");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("updated_at");
             entity.Property(e => e.UserType)
                 .HasMaxLength(30)
