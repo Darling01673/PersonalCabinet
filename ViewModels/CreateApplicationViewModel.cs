@@ -22,9 +22,9 @@ namespace PersonalCabinet.ViewModels
         public string ApplicationReason { get; set; }
         public string EnergyDeviceName { get; set; }
         public string DeviceAddress { get; set; }
-        public int RequestedPower { get; set; }
-        public int PreviousPowerKw { get; set; }
-        public int TotalPowerKw { get; set; }
+        public int? RequestedPower { get; set; }
+        public int? PreviousPowerKw { get; set; }
+        public int? TotalPowerKw { get; set; }
         public string ReliabilityCategory { get; set; }
         public DateTime? DesignDeadline { get; set; }
         public string? PaymentPlan { get; set; }
