@@ -18,20 +18,22 @@ namespace PersonalCabinet.Controllers
 
         public async Task<IActionResult> Index(string searchString, bool? unreadOnly, string sortOrder)
         {
-
             string userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return Challenge();
             long userId = long.Parse(userIdClaim);
+
             var applications = await _context.Applications
                 .Include(a => a.Messages)
                 .Where(a => a.UserId == userId)
                 .ToListAsync();
+
             List<object> resultList = new List<object>();
 
             foreach (var app in applications)
             {
                 if (app.Messages == null || app.Messages.Count == 0)
                     continue;
+
                 if (!string.IsNullOrEmpty(searchString))
                 {
                     bool found = false;
@@ -51,12 +53,14 @@ namespace PersonalCabinet.Controllers
                     if (lastDate == null || msg.CreatedAt > lastDate)
                         lastDate = msg.CreatedAt;
                 }
+
                 int unread = 0;
                 foreach (var msg in app.Messages)
                 {
                     if (msg.IsRead == false && msg.SenderId != userId)
                         unread++;
                 }
+
                 resultList.Add(new
                 {
                     app.Id,
@@ -87,13 +91,14 @@ namespace PersonalCabinet.Controllers
             {
                 resultList = resultList.OrderByDescending(x => ((dynamic)x).LastMessageDate).ToList();
             }
-            else
+            else 
             {
                 resultList = resultList
                     .OrderByDescending(x => ((dynamic)x).UnreadCount > 0)
                     .ThenByDescending(x => ((dynamic)x).LastMessageDate)
                     .ToList();
             }
+
             ViewBag.CurrentSearchString = searchString;
             ViewBag.UnreadOnly = unreadOnly ?? false;
             ViewBag.CurrentSort = sortOrder ?? "default";
