@@ -161,9 +161,23 @@ namespace PersonalCabinet.Controllers
                         : null;
                     application.PassportWhoIssued = model.PassportWhoIssued;
                     application.AddressRegistr = model.AddressRegistr;
+                    ModelState.Remove("OrganizationFullName");
+                    ModelState.Remove("OrganizationShortName");
+                    ModelState.Remove("ContactPerson");
                 }
                 else if (applicantType == "ORGANIZATION")
                 {
+                    ModelState.Remove("LastName");
+                    ModelState.Remove("FirstName");
+                    ModelState.Remove("MiddleName");
+                    ModelState.Remove("ResidenceAddress");
+                    ModelState.Remove("PassportSeries");
+                    ModelState.Remove("PassportNumber");
+                    ModelState.Remove("PassportDate");
+                    ModelState.Remove("PassportWhoIssued");
+                    ModelState.Remove("AddressRegistr");
+                    ModelState.Remove("SNILS");
+                    ModelState.Remove("DateSNILS");
                     application.OrganizationFullName = model.OrganizationFullName;
                     application.OrganizationShortName = model.OrganizationShortName;
                     application.ContactPerson = model.ContactPerson;
@@ -275,7 +289,6 @@ namespace PersonalCabinet.Controllers
                 TempData["ErrorMessage"] = "Редактирование недоступно.";
                 return RedirectToAction("Details", new { id });
             }
-
             application.Title = model.Title;
             application.Description = model.Description;
             application.ObjectAddress = model.ObjectAddress;
@@ -292,7 +305,6 @@ namespace PersonalCabinet.Controllers
                 : null;
             application.PaymentPlan = model.PaymentPlan;
             application.GuarantyingSupplier = model.GuarantyingSupplier;
-
             if (application.ApplicantType == "INDIVIDUAL")
             {
                 application.LastName = model.LastName;
@@ -312,6 +324,9 @@ namespace PersonalCabinet.Controllers
                     : null;
                 application.PassportWhoIssued = model.PassportWhoIssued;
                 application.AddressRegistr = model.AddressRegistr;
+                ModelState.Remove("OrganizationFullName");
+                ModelState.Remove("OrganizationShortName");
+                ModelState.Remove("ContactPerson");
             }
             else if (application.ApplicantType == "ORGANIZATION")
             {
@@ -320,6 +335,17 @@ namespace PersonalCabinet.Controllers
                 application.ContactPerson = model.ContactPerson;
                 application.Phone = model.Phone;
                 application.Inn = model.Inn;
+                ModelState.Remove("LastName");
+                ModelState.Remove("FirstName");
+                ModelState.Remove("MiddleName");
+                ModelState.Remove("ResidenceAddress");
+                ModelState.Remove("PassportSeries");
+                ModelState.Remove("PassportNumber");
+                ModelState.Remove("PassportDate");
+                ModelState.Remove("PassportWhoIssued");
+                ModelState.Remove("AddressRegistr");
+                ModelState.Remove("SNILS");
+                ModelState.Remove("DateSNILS");
             }
 
             if (submitType == "submit")
@@ -355,6 +381,10 @@ namespace PersonalCabinet.Controllers
             if (application.Status == "Rejected" && submitType != "submit")
             {
                 application.Status = "Draft";
+            }
+            if (!ModelState.IsValid)
+            {
+                return View(application);
             }
 
             await _context.SaveChangesAsync();
