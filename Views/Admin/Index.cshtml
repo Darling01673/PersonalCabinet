@@ -12,7 +12,7 @@
     <div class="card">
         <h2>Фильтрация заявок</h2>
         <form method="get" class="row g-3">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label">Статус</label>
                 <select name="statusFilter" class="form-control">
                     <option value="">Все</option>
@@ -31,8 +31,26 @@
                     }
                 </select>
             </div>
-            <div class="col-md-5">
-                <label class="form-label">Поиск </label>
+            <div class="col-md-2">
+                <label class="form-label">Тип заявителя</label>
+                <select name="applicantTypeFilter" class="form-control">
+                    <option value="">Все</option>
+                    <option value="INDIVIDUAL" selected="@(ViewBag.CurrentApplicantTypeFilter == "INDIVIDUAL")">Физическое лицо</option>
+                    <option value="ORGANIZATION" selected="@(ViewBag.CurrentApplicantTypeFilter == "ORGANIZATION")">Организация</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Причина обращения</label>
+                <select name="reasonFilter" class="form-control">
+                    <option value="">Все</option>
+                    @foreach (var reason in new[] { "Новое строительство", "Новое присоединение", "Увеличение мощности", "Изменение категорийности" })
+                    {
+                            <option value="@reason" selected="@(ViewBag.CurrentReasonFilter == reason)">@reason</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Поиск (номер, название, email, организация)</label>
                 <input type="text" name="searchString" class="form-control" value="@ViewBag.CurrentSearchString" placeholder="Введите текст..." />
             </div>
             <div class="col-md-2 d-flex align-items-end">
@@ -52,11 +70,14 @@
                     <table class="app-table">
                         <thead>
                             <tr>
-                                <th><a href="@Url.Action("Index", new { sortOrder = ViewBag.NumberSortParam, statusFilter = ViewBag.CurrentStatusFilter, searchString = ViewBag.CurrentSearchString })" class="sort-link">№ заявки ⇅</a></th>
+                                <th><a href="@Url.Action("Index", new { sortOrder = ViewBag.NumberSortParam, statusFilter = ViewBag.CurrentStatusFilter, reasonFilter = ViewBag.CurrentReasonFilter, applicantTypeFilter = ViewBag.CurrentApplicantTypeFilter, searchString = ViewBag.CurrentSearchString })" class="sort-link">№ заявки ⇅</a></th>
                                 <th>Название</th>
                                 <th>Заявитель</th>
-                                <th><a href="@Url.Action("Index", new { sortOrder = ViewBag.DateSortParam, statusFilter = ViewBag.CurrentStatusFilter, searchString = ViewBag.CurrentSearchString })" class="sort-link">Дата создания ⇅</a></th>
-                                <th><a href="@Url.Action("Index", new { sortOrder = ViewBag.StatusSortParam, statusFilter = ViewBag.CurrentStatusFilter, searchString = ViewBag.CurrentSearchString })" class="sort-link">Статус ⇅</a></th>
+                                <th>Тип заявителя</th>
+                                <th>Причина обращения</th>
+                                <th>Мощность (кВт)</th>
+                                <th><a href="@Url.Action("Index", new { sortOrder = ViewBag.DateSortParam, statusFilter = ViewBag.CurrentStatusFilter, reasonFilter = ViewBag.CurrentReasonFilter, applicantTypeFilter = ViewBag.CurrentApplicantTypeFilter, searchString = ViewBag.CurrentSearchString })" class="sort-link">Дата создания ⇅</a></th>
+                                <th><a href="@Url.Action("Index", new { sortOrder = ViewBag.StatusSortParam, statusFilter = ViewBag.CurrentStatusFilter, reasonFilter = ViewBag.CurrentReasonFilter, applicantTypeFilter = ViewBag.CurrentApplicantTypeFilter, searchString = ViewBag.CurrentSearchString })" class="sort-link">Статус ⇅</a></th>
                                 <th>Действия</th>
                             </tr>
                         </thead>
@@ -66,7 +87,22 @@
                                     <tr>
                                         <td>@app.ApplicationNumber</td>
                                         <td>@app.Title</td>
-                                        <td>@app.User.Email</td>
+                                        <td>
+                                    @if (app.ApplicantType == "ORGANIZATION")
+                                    {
+                                        @(app.OrganizationShortName ?? app.OrganizationFullName ?? app.User.Email)
+                                    }
+                                    else
+                                    {
+                                        @app.User.Email
+                                    }
+                                        </td>
+                                        <td>
+                                    @(app.ApplicantType == "INDIVIDUAL" ? "Физ. лицо" :
+                                          app.ApplicantType == "ORGANIZATION" ? "Организация" : "—")
+                                        </td>
+                                        <td>@(app.ApplicationReason ?? "—")</td>
+                                        <td>@(app.RequestedPower?.ToString() ?? "—")</td>
                                         <td>@app.CreatedAt?.ToString("dd.MM.yyyy")</td>
                                         <td>
                                     @{
@@ -109,11 +145,11 @@
                         {
                             if (i == ViewBag.CurrentPage)
                             {
-                                                    <span class="btn-small disabled">@i</span>
+                                    <span class="btn-small disabled">@i</span>
                             }
                             else
                             {
-                                                    <a href="@Url.Action("Index", new { page = i, statusFilter = ViewBag.CurrentStatusFilter, searchString = ViewBag.CurrentSearchString, sortOrder = ViewBag.CurrentSort })" class="btn-small">@i</a>
+                                       <a href="@Url.Action("Index", new { page = i, statusFilter = ViewBag.CurrentStatusFilter, reasonFilter = ViewBag.CurrentReasonFilter, applicantTypeFilter = ViewBag.CurrentApplicantTypeFilter, searchString = ViewBag.CurrentSearchString, sortOrder = ViewBag.CurrentSort })" class="btn-small">@i</a>
                             }
                         }
                     }

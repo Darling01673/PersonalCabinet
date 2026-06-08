@@ -25,7 +25,7 @@
                 </select>
             </div>
             <div class="col-md-5">
-                <label class="form-label">Поиск (№, название, адрес)</label>
+                <label class="form-label">Поиск (№, название, адрес, организация)</label>
                 <input type="text" name="searchString" class="form-control" value="@ViewBag.CurrentSearchString" placeholder="Введите текст..." />
             </div>
             <div class="col-md-2 d-flex align-items-end">
@@ -36,6 +36,7 @@
             </div>
         </form>
     </div>
+
     <div class="card">
         <h2>Список заявок</h2>
         @if (Model.Any())
@@ -46,6 +47,8 @@
                             <tr>
                                 <th><a href="@Url.Action("Index", new { sortOrder = ViewBag.NumberSortParam, statusFilter = ViewBag.CurrentStatusFilter, searchString = ViewBag.CurrentSearchString })" class="sort-link">№ заявки ⇅</a></th>
                                 <th>Название</th>
+                                <th>Заявитель</th>
+                                <th>Тип заявителя</th>
                                 <th>Адрес</th>
                                 <th>Мощность</th>
                                 <th><a href="@Url.Action("Index", new { sortOrder = ViewBag.DateSortParam, statusFilter = ViewBag.CurrentStatusFilter, searchString = ViewBag.CurrentSearchString })" class="sort-link">Дата ⇅</a></th>
@@ -59,6 +62,20 @@
                                     <tr>
                                         <td>@app.ApplicationNumber</td>
                                         <td>@app.Title</td>
+                                        <td>
+                                    @if (app.ApplicantType == "ORGANIZATION")
+                                    {
+                                        @(app.OrganizationShortName ?? app.OrganizationFullName ?? app.User?.Email ?? "—")
+                                    }
+                                    else
+                                    {
+                                        @(app.User?.Email ?? "—")
+                                    }
+                                        </td>
+                                        <td>
+                                    @(app.ApplicantType == "INDIVIDUAL" ? "Физ. лицо" :
+                                          app.ApplicantType == "ORGANIZATION" ? "Организация" : "—")
+                                        </td>
                                         <td>@app.ObjectAddress</td>
                                         <td>@(app.RequestedPower?.ToString("0.##") ?? "—") кВт</td>
                                         <td>@(app.SubmittedAt?.ToString("dd.MM.yyyy") ?? app.CreatedAt?.ToString("dd.MM.yyyy") ?? "—")</td>

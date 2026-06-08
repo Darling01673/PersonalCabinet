@@ -16,6 +16,7 @@ namespace PersonalCabinet.Controllers
         private readonly ApplicationDbContext _context;
         private readonly FileService _fileService;
         private readonly IHubContext<ChatHub> _hubContext;
+
         public ApplicationController(ApplicationDbContext context, FileService fileService, IHubContext<ChatHub> hubContext)
         {
             _context = context;
@@ -114,6 +115,9 @@ namespace PersonalCabinet.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                var user = await _context.Users.FindAsync(userId.Value);
+                string applicantType = user?.UserType ?? "INDIVIDUAL";
+
                 var application = new Application
                 {
                     UserId = userId.Value,
@@ -131,19 +135,38 @@ namespace PersonalCabinet.Controllers
                     ReliabilityCategory = model.ReliabilityCategory,
                     DesignDeadline = model.DesignDeadline,
                     ApplicationReason = model.ApplicationReason,
-                    LastName = model.LastName,
-                    FirstName = model.FirstName,
-                    MiddleName = model.MiddleName,
-                    ResidenceAddress = model.ResidenceAddress,
-                    Phone = model.Phone,
-                    Inn = model.Inn,
-                    PassportSeries = model.PassportSeries,
-                    PassportNumber = model.PassportNumber,
-                    PassportDate = model.PassportDate
+                    Description = model.Description,
+                    PaymentPlan = model.PaymentPlan,
+                    GuarantyingSupplier = model.GuarantyingSupplier,
+                    ApplicantType = applicantType
                 };
+                if (applicantType == "INDIVIDUAL")
+                {
+                    application.LastName = model.LastName;
+                    application.FirstName = model.FirstName;
+                    application.MiddleName = model.MiddleName;
+                    application.ResidenceAddress = model.ResidenceAddress;
+                    application.Phone = model.Phone;
+                    application.Inn = model.Inn;
+                    application.PassportSeries = model.PassportSeries;
+                    application.PassportNumber = model.PassportNumber;
+                    application.PassportDate = model.PassportDate;
+                    application.SNILS = model.SNILS;
+                    application.DateSNILS = model.DateSNILS;
+                    application.PassportWhoIssued = model.PassportWhoIssued;
+                    application.AddressRegistr = model.AddressRegistr;
+                }
+                else if (applicantType == "ORGANIZATION")
+                {
+                    application.OrganizationFullName = model.OrganizationFullName;
+                    application.OrganizationShortName = model.OrganizationShortName;
+                    application.ContactPerson = model.ContactPerson;
+                    application.Phone = model.Phone;
+                    application.Inn = model.Inn;
+                }
+
                 _context.Applications.Add(application);
                 await _context.SaveChangesAsync();
-
                 if (model.Attachments != null && model.Attachments.Any())
                 {
                     foreach (var file in model.Attachments)
@@ -257,15 +280,32 @@ namespace PersonalCabinet.Controllers
             application.TotalPowerKw = model.TotalPowerKw;
             application.ReliabilityCategory = model.ReliabilityCategory;
             application.DesignDeadline = model.DesignDeadline;
-            application.LastName = model.LastName;
-            application.FirstName = model.FirstName;
-            application.MiddleName = model.MiddleName;
-            application.ResidenceAddress = model.ResidenceAddress;
-            application.Phone = model.Phone;
-            application.Inn = model.Inn;
-            application.PassportSeries = model.PassportSeries;
-            application.PassportNumber = model.PassportNumber;
-            application.PassportDate = model.PassportDate;
+            application.PaymentPlan = model.PaymentPlan;
+            application.GuarantyingSupplier = model.GuarantyingSupplier;
+            if (application.ApplicantType == "INDIVIDUAL")
+            {
+                application.LastName = model.LastName;
+                application.FirstName = model.FirstName;
+                application.MiddleName = model.MiddleName;
+                application.ResidenceAddress = model.ResidenceAddress;
+                application.Phone = model.Phone;
+                application.Inn = model.Inn;
+                application.PassportSeries = model.PassportSeries;
+                application.PassportNumber = model.PassportNumber;
+                application.PassportDate = model.PassportDate;
+                application.SNILS = model.SNILS;
+                application.DateSNILS = model.DateSNILS;
+                application.PassportWhoIssued = model.PassportWhoIssued;
+                application.AddressRegistr = model.AddressRegistr;
+            }
+            else if (application.ApplicantType == "ORGANIZATION")
+            {
+                application.OrganizationFullName = model.OrganizationFullName;
+                application.OrganizationShortName = model.OrganizationShortName;
+                application.ContactPerson = model.ContactPerson;
+                application.Phone = model.Phone;
+                application.Inn = model.Inn;
+            }
 
             if (submitType == "submit")
             {
@@ -274,14 +314,12 @@ namespace PersonalCabinet.Controllers
                 _context.ApplicationStatusHistories.Add(new ApplicationStatusHistory
                 {
                     ApplicationId = id,
-                    OldStatus = "Draft",
+                    OldStatus = application.Status == "Rejected" ? "Rejected" : "Draft",
                     NewStatus = "Submitted",
                     ChangedBy = userId,
                     CreatedAt = DateTime.Now,
                     Comment = "Заявка отправлена на рассмотрение через редактирование"
                 });
-
-                // Уведомление в чат
                 await _hubContext.Clients.Group($"application_{id}").SendAsync("ReceiveMessage", new
                 {
                     id = 0,
@@ -297,8 +335,10 @@ namespace PersonalCabinet.Controllers
             {
                 TempData["SuccessMessage"] = "Черновик сохранён.";
             }
-
-            if (application.Status == "Rejected") application.Status = "Draft";
+            if (application.Status == "Rejected" && submitType != "submit")
+            {
+                application.Status = "Draft";
+            }
 
             await _context.SaveChangesAsync();
             return RedirectToAction("Details", new { id });
@@ -402,8 +442,6 @@ namespace PersonalCabinet.Controllers
                 Comment = "Заявка отправлена на рассмотрение"
             });
             await _context.SaveChangesAsync();
-
-            // Уведомление в чат
             await _hubContext.Clients.Group($"application_{id}").SendAsync("ReceiveMessage", new
             {
                 id = 0,
@@ -482,5 +520,6 @@ namespace PersonalCabinet.Controllers
             } while (_context.Applications.Any(a => a.ApplicationNumber == number));
             return number;
         }
+
     }
 }

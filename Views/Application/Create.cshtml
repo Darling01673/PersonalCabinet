@@ -1,6 +1,7 @@
 ﻿@model PersonalCabinet.ViewModels.CreateApplicationViewModel
 @{
     ViewData["Title"] = "Подача заявки";
+    var userType = User.FindFirst("UserType")?.Value;
 }
 <link rel="stylesheet" href="/css/create.css" />
 <div class="page-title">
@@ -29,62 +30,119 @@
     <div class="wizard-content">
         <form method="post" asp-action="Create" enctype="multipart/form-data" id="wizardForm">
             @Html.AntiForgeryToken()
+            <input type="hidden" name="ApplicantType" value="@userType" />
+
             <div class="wizard-panel active" id="panel-1">
                 <div class="wizard-panel-title" style="display: flex; justify-content: space-between; align-items: center;">
                     <span><i class="bi bi-person-badge"></i> Данные заявителя</span>
-                    <button type="button" id="fillFromProfileBtn" class="btn-fill-profile">
-                        <i class="bi bi-person-bounding-box"></i> Заполнить из профиля
-                    </button>
+                    @if (userType == "INDIVIDUAL")
+                    {
+                            <button type="button" id="fillFromProfileBtn" class="btn-fill-profile">
+                                <i class="bi bi-person-bounding-box"></i> Заполнить из профиля
+                            </button>
+                    }
                 </div>
+                @if (userType == "INDIVIDUAL")
+                {
+                        <div class="individual-fields">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label-cabinet">Фамилия *</label>
+                                    <input type="text" name="LastName" class="form-control-cabinet" value="@Model.LastName" required />
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label-cabinet">Имя *</label>
+                                    <input type="text" name="FirstName" class="form-control-cabinet" value="@Model.FirstName" required />
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label-cabinet">Отчество</label>
+                                    <input type="text" name="MiddleName" class="form-control-cabinet" value="@Model.MiddleName" />
+                                </div>
+                            </div>
 
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label-cabinet">Фамилия *</label>
-                        <input type="text" name="LastName" class="form-control-cabinet" value="@Model.LastName" required />
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label-cabinet">Имя *</label>
-                        <input type="text" name="FirstName" class="form-control-cabinet" value="@Model.FirstName" required />
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label-cabinet">Отчество</label>
-                        <input type="text" name="MiddleName" class="form-control-cabinet" value="@Model.MiddleName" />
-                    </div>
-                </div>
+                            <div class="mb-3">
+                                <label class="form-label-cabinet">Место жительства *</label>
+                                <input type="text" name="ResidenceAddress" class="form-control-cabinet" value="@Model.ResidenceAddress" required />
+                            </div>
 
-                <div class="mb-3">
-                    <label class="form-label-cabinet">Место жительства *</label>
-                    <input type="text" name="ResidenceAddress" class="form-control-cabinet" value="@Model.ResidenceAddress" required />
-                </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label-cabinet">СНИЛС</label>
+                                    <input type="text" name="SNILS" class="form-control-cabinet" maxlength="11" value="@Model.SNILS" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label-cabinet">Дата получения СНИЛС</label>
+                                    <input type="date" name="DateSNILS" class="form-control-cabinet" value="@(Model.DateSNILS?.ToString("yyyy-MM-dd"))" />
+                                </div>
+                            </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label-cabinet">Контактный телефон</label>
-                        <input type="tel" name="Phone" class="form-control-cabinet" value="@Model.Phone" />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label-cabinet">ИНН</label>
-                        <input type="text" name="Inn" class="form-control-cabinet" maxlength="12" value="@Model.Inn" />
-                    </div>
-                </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label-cabinet">Контактный телефон</label>
+                                    <input type="tel" name="Phone" class="form-control-cabinet" value="@Model.Phone" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label-cabinet">ИНН</label>
+                                    <input type="text" name="Inn" class="form-control-cabinet" maxlength="12" value="@Model.Inn" />
+                                </div>
+                            </div>
 
-                <div class="wizard-panel-subtitle">Паспортные данные</div>
+                            <div class="wizard-panel-subtitle">Паспортные данные</div>
 
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label-cabinet">Серия *</label>
-                        <input type="text" name="PassportSeries" class="form-control-cabinet" maxlength="4" value="@Model.PassportSeries" required />
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label-cabinet">Номер *</label>
-                        <input type="text" name="PassportNumber" class="form-control-cabinet" maxlength="6" value="@Model.PassportNumber" required />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label-cabinet">Дата выдачи *</label>
-                        <input type="date" name="PassportDate" class="form-control-cabinet" value="@(Model.PassportDate?.ToString("yyyy-MM-dd") ?? "")" required />
-                    </div>
-                </div>
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label-cabinet">Серия *</label>
+                                    <input type="text" name="PassportSeries" class="form-control-cabinet" maxlength="4" value="@Model.PassportSeries" required />
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label-cabinet">Номер *</label>
+                                    <input type="text" name="PassportNumber" class="form-control-cabinet" maxlength="6" value="@Model.PassportNumber" required />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label-cabinet">Дата выдачи *</label>
+                                    <input type="date" name="PassportDate" class="form-control-cabinet" value="@(Model.PassportDate?.ToString("yyyy-MM-dd"))" required />
+                                </div>
+                            </div>
 
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label-cabinet">Кем выдан</label>
+                                    <input type="text" name="PassportWhoIssued" class="form-control-cabinet" value="@Model.PassportWhoIssued" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label-cabinet">Адрес регистрации</label>
+                                    <input type="text" name="AddressRegistr" class="form-control-cabinet" value="@Model.AddressRegistr" />
+                                </div>
+                            </div>
+                        </div>
+                }
+                @if (userType == "ORGANIZATION")
+                {
+                        <div class="organization-fields">
+                            <div class="mb-3">
+                                <label class="form-label-cabinet">Полное наименование организации *</label>
+                                <input type="text" name="OrganizationFullName" class="form-control-cabinet" value="@Model.OrganizationFullName" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label-cabinet">Краткое наименование</label>
+                                <input type="text" name="OrganizationShortName" class="form-control-cabinet" value="@Model.OrganizationShortName" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label-cabinet">Контактное лицо *</label>
+                                <input type="text" name="ContactPerson" class="form-control-cabinet" value="@Model.ContactPerson" required />
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label-cabinet">Контактный телефон</label>
+                                    <input type="tel" name="Phone" class="form-control-cabinet" value="@Model.Phone" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label-cabinet">ИНН</label>
+                                    <input type="text" name="Inn" class="form-control-cabinet" maxlength="12" value="@Model.Inn" />
+                                </div>
+                            </div>
+                        </div>
+                }
                 <div class="mb-3">
                     <label class="form-label-cabinet">Причина обращения *</label>
                     <select name="ApplicationReason" class="form-control-cabinet" required>
@@ -102,17 +160,17 @@
             </div>
             <div class="wizard-panel" id="panel-2">
                 <div class="wizard-panel-title">
-                   Информация об объекте и мощности
+                    Информация об объекте и мощности
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label-cabinet">Наименование энергопринимающего устройства *</label>
-                    <input type="text" name="EnergyDeviceName" class="form-control-cabinet" value="@Model.EnergyDeviceName" />
+                    <input type="text" name="EnergyDeviceName" class="form-control-cabinet" value="@Model.EnergyDeviceName" required />
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label-cabinet">Адрес энергопринимающего устройства *</label>
-                    <input type="text" name="DeviceAddress" class="form-control-cabinet" value="@Model.DeviceAddress" />
+                    <input type="text" name="DeviceAddress" class="form-control-cabinet" value="@Model.DeviceAddress" required />
                 </div>
 
                 <div class="row">
@@ -146,6 +204,42 @@
                     </div>
                 </div>
 
+                <hr class="my-4" />
+
+                <div class="wizard-panel-subtitle">Условия договора и энергоснабжения</div>
+
+                <div class="mb-4">
+                    <label class="form-label-cabinet d-block mb-2">Порядок внесения платы за технологическое присоединение</label>
+                    <div class="payment-option-card form-check">
+                        <input class="form-check-input" type="radio" name="PaymentPlan" id="paymentPlan1" value="Option1"
+                               checked="@(Model.PaymentPlan == "Option1" || string.IsNullOrEmpty(Model.PaymentPlan))" />
+                        <label class="form-check-label" for="paymentPlan1" style="cursor: pointer; margin-left: 5px;">
+                            <strong>Вариант 1</strong>
+                            <span class="d-block text-muted" style="font-size: 0.9rem; margin-top: 5px;">
+                                100 процентов платы за технологическое присоединение вносятся при поступлении счета от сетевой организации.
+                            </span>
+                        </label>
+                    </div>
+                    <div class="payment-option-card form-check">
+                        <input class="form-check-input" type="radio" name="PaymentPlan" id="paymentPlan2" value="Option2"
+                               checked="@(Model.PaymentPlan == "Option2")" />
+                        <label class="form-check-label" for="paymentPlan2" style="cursor: pointer; margin-left: 5px;">
+                            <strong>Вариант 2</strong>
+                            <span class="d-block text-muted" style="font-size: 0.9rem; margin-top: 5px;">
+                                - 10 процентов платы вносятся при поступлении счета от сетевой организации;<br />
+                                - беспроцентная рассрочка платежа в размере 90 процентов платы с условием ежеквартального внесения платы равными долями на период до 3 лет со дня подписания сторонами акта о ТП.
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label-cabinet">Гарантирующий поставщик (энергосбытовая организация)</label>
+                    <input type="text" name="GuarantyingSupplier" class="form-control-cabinet"
+                           placeholder="Например: АО «Энергосбыт», ООО «РМ-Энерго»"
+                           value="@Model.GuarantyingSupplier" />
+                </div>
+
                 <div class="wizard-buttons">
                     <button type="button" class="btn-cabinet-outline" onclick="prevStep()"><i class="bi bi-arrow-left"></i> Назад</button>
                     <button type="button" class="btn-cabinet" onclick="validateAndNextStep(2)">Далее <i class="bi bi-arrow-right"></i></button>
@@ -153,18 +247,22 @@
             </div>
             <div class="wizard-panel" id="panel-3">
                 <div class="wizard-panel-title">
-                     Приложение к заявке
+                    Приложение к заявке
                 </div>
 
                 <p class="text-muted mb-3">
-                    Загрузите необходимые документы (план расположения, правоустанавливающие документы и т.д.).
-                    Допустимые форматы: PDF, JPG, PNG, DOCX, XLSX, ZIP. Максимум 10 файлов.
+                    Загрузите необходимые документы. Допустимые форматы: PDF, JPG, PNG, DOCX, XLSX, ZIP.
                 </p>
 
                 <div class="mb-3">
                     <label class="form-label-cabinet">Выберите файлы</label>
                     <input type="file" name="Attachments" class="form-control-cabinet" multiple
                            accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.zip,.rar" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-cabinet">Описание</label>
+                    <input type="text" name="Description" class="form-control-cabinet" value="@Model.Description" />
                 </div>
 
                 <div class="wizard-buttons">
@@ -178,7 +276,6 @@
         </form>
     </div>
 </div>
-
 <div class="modal fade" id="validationWarningModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -284,52 +381,67 @@
         if (validateStep(stepNumber)) nextStep();
     }
 
-    function fillFormWithProfileData(data) {
-        const setFieldValue = (fieldName, value) => {
-            if (!value) return;
-            let field = document.querySelector(`input[name="${fieldName}"], select[name="${fieldName}"]`);
-            if (field) {
-                field.value = value;
-                field.classList.remove('is-invalid');
+    @if (userType == "INDIVIDUAL")
+    {
+        <text>
+            function fillFormWithProfileData(data) {
+                const setFieldValue = (fieldName, value) => {
+                    if (!value) return;
+                    let field = document.querySelector(`input[name="${fieldName}"], select[name="${fieldName}"]`);
+                    if (field) {
+                        field.value = value;
+                        field.classList.remove('is-invalid');
+                    }
+                };
+                setFieldValue('LastName', data.lastName);
+                setFieldValue('FirstName', data.firstName);
+                setFieldValue('MiddleName', data.middleName);
+                setFieldValue('Phone', data.phone);
+                setFieldValue('ResidenceAddress', data.residenceAddress);
+                setFieldValue('Inn', data.inn);
+                setFieldValue('PassportSeries', data.passportSeries);
+                setFieldValue('PassportNumber', data.passportNumber);
+                setFieldValue('PassportDate', data.passportDate);
+                // Также можно заполнить СНИЛС, если есть
+                if (data.snils) setFieldValue('SNILS', data.snils);
+                if (data.dateSNILS) setFieldValue('DateSNILS', data.dateSNILS);
             }
-        };
-        setFieldValue('LastName', data.lastName);
-        setFieldValue('FirstName', data.firstName);
-        setFieldValue('MiddleName', data.middleName);
-        setFieldValue('Phone', data.phone);
-        setFieldValue('ResidenceAddress', data.residenceAddress);
-        setFieldValue('Inn', data.inn);
-        setFieldValue('PassportSeries', data.passportSeries);
-        setFieldValue('PassportNumber', data.passportNumber);
-        setFieldValue('PassportDate', data.passportDate);
-    }
 
-    const fillBtn = document.getElementById('fillFromProfileBtn');
-    if (fillBtn) {
-        fillBtn.addEventListener('click', async function () {
-            try {
-                const response = await fetch('/Account/GetPersonalData');
-                if (!response.ok) throw new Error('Ошибка загрузки профиля');
-                const data = await response.json();
-                window.profileData = data;
-                let confirmModal = new bootstrap.Modal(document.getElementById('confirmFillModal'));
-                confirmModal.show();
-            } catch (err) {
-                alert('Не удалось загрузить данные профиля');
+            const fillBtn = document.getElementById('fillFromProfileBtn');
+            if (fillBtn) {
+                fillBtn.addEventListener('click', async function () {
+                    try {
+                        const response = await fetch('/Account/GetPersonalData');
+                        if (!response.ok) throw new Error('Ошибка загрузки профиля');
+                        const data = await response.json();
+                        window.profileData = data;
+                        let confirmModal = new bootstrap.Modal(document.getElementById('confirmFillModal'));
+                        confirmModal.show();
+                    } catch (err) {
+                        alert('Не удалось загрузить данные профиля');
+                    }
+                });
             }
-        });
-    }
 
-    document.getElementById('confirmFillBtn')?.addEventListener('click', function () {
-        if (window.profileData) {
-            fillFormWithProfileData(window.profileData);
-            window.profileData = null;
-        }
-        let modal = bootstrap.Modal.getInstance(document.getElementById('confirmFillModal'));
-        modal.hide();
-    });
+            document.getElementById('confirmFillBtn')?.addEventListener('click', function () {
+                if (window.profileData) {
+                    fillFormWithProfileData(window.profileData);
+                    window.profileData = null;
+                }
+                let modal = bootstrap.Modal.getInstance(document.getElementById('confirmFillModal'));
+                modal.hide();
+            });
+        </text>
+    }
 
     document.addEventListener('DOMContentLoaded', function() {
         updateStepIndicator(1);
+    });
+
+    document.querySelectorAll('.payment-option-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio) radio.checked = true;
+        });
     });
 </script>

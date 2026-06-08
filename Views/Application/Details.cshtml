@@ -53,6 +53,24 @@
                 <div class="row mb-2"><div class="col-3 fw-bold">Категория надёжности:</div><div class="col-9">@(Model.ReliabilityCategory ?? "—")</div></div>
                 <div class="row mb-2"><div class="col-3 fw-bold">Сроки проектирования:</div><div class="col-9">@(Model.DesignDeadline?.ToString("dd.MM.yyyy") ?? "—")</div></div>
                 <hr />
+                <div class="row mb-2">
+                    <div class="col-3 fw-bold">Порядок оплаты:</div>
+                    <div class="col-9">
+                        @if (Model.PaymentPlan == "Option1")
+                        {
+                                <span>Вариант 1 (100% при получении счета)</span>
+                        }
+                        else if (Model.PaymentPlan == "Option2")
+                        {
+                                <span>Вариант 2 (10% при получении счета, 90% рассрочка до 3-х лет)</span>
+                        }
+                        else
+                        {
+                                <span>—</span>
+                        }
+                    </div>
+                </div>
+                <div class="row mb-2"><div class="col-3 fw-bold">Гарантирующий поставщик:</div><div class="col-9">@(Model.GuarantyingSupplier ?? "—")</div></div>
                 <div class="row mb-2"><div class="col-3 fw-bold">Описание:</div><div class="col-9">@(Model.Description ?? "—")</div></div>
                 <div class="row mb-2"><div class="col-3 fw-bold">Дата подачи:</div><div class="col-9">@(Model.SubmittedAt?.ToString("dd.MM.yyyy HH:mm") ?? "—")</div></div>
             </div>
@@ -63,16 +81,16 @@
             <div class="card-body">
                 @if (Model.Documents.Any())
                 {
-                            <ul>
+                        <ul>
                         @foreach (var d in Model.Documents)
                         {
-                                            <li><a href="@d.FilePath" target="_blank">@d.OriginalFileName</a> (@d.UploadedAt?.ToString("dd.MM.yyyy"))</li>
+                                    <li><a href="@d.FilePath" target="_blank">@d.OriginalFileName</a> (@d.UploadedAt?.ToString("dd.MM.yyyy"))</li>
                         }
-                            </ul>
+                        </ul>
                 }
                 else
                 {
-                            <p>Нет документов.</p>
+                        <p>Нет документов.</p>
                 }
             </div>
         </div>
@@ -82,14 +100,46 @@
         <div class="card-cabinet">
             <div class="card-header">Данные заявителя</div>
             <div class="card-body">
-                <div class="row mb-2"><div class="col-4 fw-bold">ФИО:</div><div class="col-8">@($"{Model.LastName} {Model.FirstName} {Model.MiddleName}".Trim())</div></div>
-                <div class="row mb-2"><div class="col-4 fw-bold">Место жительства:</div><div class="col-8">@(Model.ResidenceAddress ?? "—")</div></div>
-                <div class="row mb-2"><div class="col-4 fw-bold">Телефон:</div><div class="col-8">@(Model.Phone ?? "—")</div></div>
-                <div class="row mb-2"><div class="col-4 fw-bold">ИНН:</div><div class="col-8">@(Model.Inn ?? "—")</div></div>
-                <div class="row mb-2"><div class="col-4 fw-bold">Паспорт:</div><div class="col-8">@(Model.PassportSeries) @(Model.PassportNumber)</div></div>
-                <div class="row mb-2"><div class="col-4 fw-bold">Дата выдачи:</div><div class="col-8">@(Model.PassportDate?.ToString("dd.MM.yyyy") ?? "—")</div></div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold">Тип заявителя:</div>
+                    <div class="col-8">
+                        @(Model.ApplicantType == "INDIVIDUAL" ? "Физическое лицо" :
+                              Model.ApplicantType == "ORGANIZATION" ? "Организация" : "—")
+                    </div>
+                </div>
+
+                @if (Model.ApplicantType == "INDIVIDUAL")
+                {
+                        <div class="individual-fields">
+                            <div class="row mb-2"><div class="col-4 fw-bold">ФИО:</div><div class="col-8">@($"{Model.LastName} {Model.FirstName} {Model.MiddleName}".Trim())</div></div>
+                            <div class="row mb-2"><div class="col-4 fw-bold">Место жительства:</div><div class="col-8">@(Model.ResidenceAddress ?? "—")</div></div>
+                            <div class="row mb-2"><div class="col-4 fw-bold">СНИЛС:</div><div class="col-8">@(Model.SNILS?.ToString() ?? "—")</div></div>
+                            <div class="row mb-2"><div class="col-4 fw-bold">Дата получения СНИЛС:</div><div class="col-8">@(Model.DateSNILS?.ToString("dd.MM.yyyy") ?? "—")</div></div>
+                            <div class="row mb-2"><div class="col-4 fw-bold">Телефон:</div><div class="col-8">@(Model.Phone ?? "—")</div></div>
+                            <div class="row mb-2"><div class="col-4 fw-bold">ИНН:</div><div class="col-8">@(Model.Inn ?? "—")</div></div>
+                            <div class="row mb-2"><div class="col-4 fw-bold">Паспорт:</div><div class="col-8">@(Model.PassportSeries) @(Model.PassportNumber)</div></div>
+                            <div class="row mb-2"><div class="col-4 fw-bold">Дата выдачи:</div><div class="col-8">@(Model.PassportDate?.ToString("dd.MM.yyyy") ?? "—")</div></div>
+                            <div class="row mb-2"><div class="col-4 fw-bold">Кем выдан:</div><div class="col-8">@(Model.PassportWhoIssued ?? "—")</div></div>
+                            <div class="row mb-2"><div class="col-4 fw-bold">Адрес регистрации:</div><div class="col-8">@(Model.AddressRegistr ?? "—")</div></div>
+                        </div>
+                }
+                else if (Model.ApplicantType == "ORGANIZATION")
+                {
+                        <div class="organization-fields">
+                            <div class="row mb-2"><div class="col-4 fw-bold">Полное наименование:</div><div class="col-8">@(Model.OrganizationFullName ?? "—")</div></div>
+                            <div class="row mb-2"><div class="col-4 fw-bold">Краткое наименование:</div><div class="col-8">@(Model.OrganizationShortName ?? "—")</div></div>
+                            <div class="row mb-2"><div class="col-4 fw-bold">Контактное лицо:</div><div class="col-8">@(Model.ContactPerson ?? "—")</div></div>
+                            <div class="row mb-2"><div class="col-4 fw-bold">Телефон:</div><div class="col-8">@(Model.Phone ?? "—")</div></div>
+                            <div class="row mb-2"><div class="col-4 fw-bold">ИНН:</div><div class="col-8">@(Model.Inn ?? "—")</div></div>
+                        </div>
+                }
+                else
+                {
+                        <div class="row mb-2"><div class="col-12 text-muted">Данные заявителя отсутствуют</div></div>
+                }
             </div>
         </div>
+
         <div class="card-cabinet mt-4">
             <div class="card-header"><i class="bi bi-chat-dots"></i> Чат с оператором</div>
             <div class="card-body p-0">
@@ -120,10 +170,10 @@
                                     }
                                 }
                             }
-                                    <div class="chat-message @(msg.SenderId == (long?)ViewBag.CurrentUserId ? "user" : "operator")">
-                                        <p>@msg.Message1</p>
-                                        <small>@senderName · @msg.CreatedAt?.ToString("dd.MM.yyyy HH:mm")</small>
-                                    </div>
+                                <div class="chat-message @(msg.SenderId == (long?)ViewBag.CurrentUserId ? "user" : "operator")">
+                                    <p>@msg.Message1</p>
+                                    <small>@senderName · @msg.CreatedAt?.ToString("dd.MM.yyyy HH:mm")</small>
+                                </div>
                         }
                     </div>
                     <div class="chat-input">
@@ -133,19 +183,12 @@
                             </span>
                             <button type="button" id="btn-remove-file" style="border: none; background: none; color: #dc3545; font-weight: bold; cursor: pointer; font-size: 16px; padding: 0;">&times;</button>
                         </div>
-
                         <form id="chat-form">
-
                             <button type="button" id="btn-attach" style="background: none; border: none; color: #6c757d; font-size: 1.25rem; cursor: pointer; padding: 0 8px;" title="Прикрепить файл">
                                 <i class="bi bi-paperclip"></i>
                             </button>
-
-
                             <input type="file" id="chat-file" style="display: none;" />
-
-
                             <input type="text" id="chat-text" placeholder="Напишите сообщение..." autocomplete="off" />
-
                             <button type="submit"><i class="bi bi-send-fill"></i></button>
                         </form>
                     </div>
@@ -308,7 +351,7 @@
                 });
         });
         function updateDocumentsUI(fileName) {
-            const cardBody = document.getElementById('documents-card-body') || document.querySelector('.card-cabinet .card-body');
+            const cardBody = document.querySelector('.card-cabinet .card-body');
             if (!cardBody) return;
 
             const noDocsMsg = document.getElementById('no-documents-message');

@@ -44,6 +44,16 @@ public partial class Application
     public string PassportSeries { get; set; }
     public string PassportNumber { get; set; }
     public DateTime? PassportDate { get; set; }
+    public long? SNILS { get; set; }
+    public DateTime? DateSNILS { get; set; }
+    public string? PassportWhoIssued { get; set; }
+    public string? AddressRegistr { get; set; }
+    public string? PaymentPlan { get; set; }
+    public string? GuarantyingSupplier { get; set; }
+    public string? OrganizationFullName { get; set; }
+    public string? OrganizationShortName { get; set; }
+    public string? ContactPerson { get; set; }
+    public string? ApplicantType { get; set; }
 
     public virtual ICollection<ApplicationStatusHistory> ApplicationStatusHistories { get; set; } = new List<ApplicationStatusHistory>();
 
