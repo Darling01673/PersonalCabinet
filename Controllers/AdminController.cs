@@ -208,7 +208,7 @@ namespace PersonalCabinet.Controllers
         {
             var currentUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var query = _context.Applications
-                .Where(a => a.Messages.Any())
+                .Where(a => a.Messages.Any() && a.Status != "Draft")
                 .Select(a => new
                 {
                     a.Id,

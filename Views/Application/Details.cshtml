@@ -104,7 +104,7 @@
                     <div class="col-4 fw-bold">Тип заявителя:</div>
                     <div class="col-8">
                         @(Model.ApplicantType == "INDIVIDUAL" ? "Физическое лицо" :
-                              Model.ApplicantType == "ORGANIZATION" ? "Организация" : "—")
+                                  Model.ApplicantType == "ORGANIZATION" ? "Организация" : "—")
                     </div>
                 </div>
 
@@ -176,22 +176,32 @@
                                 </div>
                         }
                     </div>
-                    <div class="chat-input">
-                        <div id="chat-file-preview" style="display: none; padding: 6px 12px; background: #f8f9fa; border-top: 1px solid #eee; font-size: 13px; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
-                            <span id="chat-file-name" style="color: #495057; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
-                                <i class="bi bi-paperclip"></i> <span></span>
-                            </span>
-                            <button type="button" id="btn-remove-file" style="border: none; background: none; color: #dc3545; font-weight: bold; cursor: pointer; font-size: 16px; padding: 0;">&times;</button>
-                        </div>
-                        <form id="chat-form">
-                            <button type="button" id="btn-attach" style="background: none; border: none; color: #6c757d; font-size: 1.25rem; cursor: pointer; padding: 0 8px;" title="Прикрепить файл">
-                                <i class="bi bi-paperclip"></i>
-                            </button>
-                            <input type="file" id="chat-file" style="display: none;" />
-                            <input type="text" id="chat-text" placeholder="Напишите сообщение..." autocomplete="off" />
-                            <button type="submit"><i class="bi bi-send-fill"></i></button>
-                        </form>
-                    </div>
+
+                    @if (Model.Status != "Draft")
+                    {
+                            <div class="chat-input">
+                                <div id="chat-file-preview" style="display: none; padding: 6px 12px; background: #f8f9fa; border-top: 1px solid #eee; font-size: 13px; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
+                                    <span id="chat-file-name" style="color: #495057; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                                        <i class="bi bi-paperclip"></i> <span></span>
+                                    </span>
+                                    <button type="button" id="btn-remove-file" style="border: none; background: none; color: #dc3545; font-weight: bold; cursor: pointer; font-size: 16px; padding: 0;">&times;</button>
+                                </div>
+                                <form id="chat-form">
+                                    <button type="button" id="btn-attach" style="background: none; border: none; color: #6c757d; font-size: 1.25rem; cursor: pointer; padding: 0 8px;" title="Прикрепить файл">
+                                        <i class="bi bi-paperclip"></i>
+                                    </button>
+                                    <input type="file" id="chat-file" style="display: none;" />
+                                    <input type="text" id="chat-text" placeholder="Напишите сообщение..." autocomplete="off" />
+                                    <button type="submit"><i class="bi bi-send-fill"></i></button>
+                                </form>
+                            </div>
+                    }
+                    else
+                    {
+                            <div class="alert alert-warning m-3">
+                                <i class="bi bi-info-circle"></i> Чат станет доступен после отправки заявки на рассмотрение.
+                            </div>
+                    }
                 </div>
             </div>
         </div>
@@ -241,6 +251,7 @@
         const fileNameSpan = document.querySelector('#chat-file-name span');
         const btnRemoveFile = document.getElementById('btn-remove-file');
         const applicationId = @Model.Id;
+        const applicationStatus = '@Model.Status';
 
         function scrollToBottom() {
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -256,29 +267,47 @@
                 return m;
             });
         }
-        btnAttach.addEventListener('click', () => chatFile.click());
 
-        chatFile.addEventListener('change', function () {
-            if (this.files && this.files.length > 0) {
-                const file = this.files[0];
-                if (file.size > 10 * 1024 * 1024) {
-                    alert("Файл не должен превышать 10 МБ.");
+        if (btnAttach) {
+            btnAttach.addEventListener('click', function() {
+                if (applicationStatus === 'Draft') {
+                    alert('В черновике нельзя прикреплять файлы к чату.');
+                    return;
+                }
+                chatFile.click();
+            });
+        }
+
+        if (chatFile) {
+            chatFile.addEventListener('change', function () {
+                if (applicationStatus === 'Draft') {
+                    alert('В черновике нельзя прикреплять файлы к чату.');
                     resetFile();
                     return;
                 }
-                fileNameSpan.textContent = file.name;
-                filePreview.style.display = 'flex';
-            } else {
-                resetFile();
-            }
-        });
-
-        btnRemoveFile.addEventListener('click', resetFile);
+                if (this.files && this.files.length > 0) {
+                    const file = this.files[0];
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert("Файл не должен превышать 10 МБ.");
+                        resetFile();
+                        return;
+                    }
+                    fileNameSpan.textContent = file.name;
+                    filePreview.style.display = 'flex';
+                } else {
+                    resetFile();
+                }
+            });
+        }
 
         function resetFile() {
-            chatFile.value = '';
-            filePreview.style.display = 'none';
-            fileNameSpan.textContent = '';
+            if (chatFile) chatFile.value = '';
+            if (filePreview) filePreview.style.display = 'none';
+            if (fileNameSpan) fileNameSpan.textContent = '';
+        }
+
+        if (btnRemoveFile) {
+            btnRemoveFile.addEventListener('click', resetFile);
         }
 
         const connection = new signalR.HubConnectionBuilder()
@@ -301,55 +330,63 @@
             .catch(function (err) {
                 console.error("Ошибка подключения к чату:", err.toString());
             });
-        chatForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
-            const text = chatText.value.trim();
-            const hasFile = chatFile.files && chatFile.files.length > 0;
 
-            if (!text && !hasFile) return;
-
-            let finalMessage = text;
-
-            if (hasFile) {
-                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-                const token = tokenInput ? tokenInput.value : '';
-
-                const formData = new FormData();
-                formData.append('id', applicationId);
-                formData.append('file', chatFile.files[0]);
-                formData.append('__RequestVerificationToken', token);
-
-                try {
-                    const response = await fetch('/Application/AddDocument', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (response.ok) {
-                        const fileName = chatFile.files[0].name;
-                        const fileNotification = `Добавлен документ: ${fileName}`;
-                        finalMessage = finalMessage ? `${finalMessage}\n${fileNotification}` : fileNotification;
-                        updateDocumentsUI(fileName);
-                    } else {
-                        alert('Ошибка загрузки документа на сервер.');
-                        return;
-                    }
-                } catch (err) {
-                    console.error("Ошибка при отправке файла через AddDocument:", err);
-                    alert('Не удалось прикрепить файл.');
+        if (chatForm) {
+            chatForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                if (applicationStatus === 'Draft') {
+                    alert('Невозможно отправить сообщение: заявка находится в статусе "Черновик". Отправьте заявку на рассмотрение.');
                     return;
                 }
-            }
+                const text = chatText.value.trim();
+                const hasFile = chatFile && chatFile.files && chatFile.files.length > 0;
 
-            connection.invoke("SendMessage", applicationId, finalMessage)
-                .then(function () {
-                    chatText.value = '';
-                    resetFile();
-                })
-                .catch(function (err) {
-                    console.error("Ошибка отправки:", err.toString());
-                });
-        });
+                if (!text && !hasFile) return;
+
+                let finalMessage = text;
+
+                if (hasFile) {
+                    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                    const token = tokenInput ? tokenInput.value : '';
+
+                    const formData = new FormData();
+                    formData.append('id', applicationId);
+                    formData.append('file', chatFile.files[0]);
+                    formData.append('__RequestVerificationToken', token);
+
+                    try {
+                        const response = await fetch('/Application/AddDocument', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            const fileName = chatFile.files[0].name;
+                            const fileNotification = `Добавлен документ: ${fileName}`;
+                            finalMessage = finalMessage ? `${finalMessage}\n${fileNotification}` : fileNotification;
+                            updateDocumentsUI(fileName);
+                        } else {
+                            alert('Ошибка загрузки документа на сервер.');
+                            return;
+                        }
+                    } catch (err) {
+                        console.error("Ошибка при отправке файла через AddDocument:", err);
+                        alert('Не удалось прикрепить файл.');
+                        return;
+                    }
+                }
+
+                connection.invoke("SendMessage", applicationId, finalMessage)
+                    .then(function () {
+                        chatText.value = '';
+                        resetFile();
+                    })
+                    .catch(function (err) {
+                        console.error("Ошибка отправки:", err.toString());
+                    });
+            });
+        }
+
         function updateDocumentsUI(fileName) {
             const cardBody = document.querySelector('.card-cabinet .card-body');
             if (!cardBody) return;
@@ -373,7 +410,9 @@
         }
 
         window.addEventListener('beforeunload', function () {
-            connection.invoke("LeaveApplicationGroup", applicationId).catch(err => console.error(err));
+            if (connection) {
+                connection.invoke("LeaveApplicationGroup", applicationId).catch(err => console.error(err));
+            }
         });
     });
 </script>
