@@ -129,7 +129,7 @@ namespace PersonalCabinet.Controllers
 
             string oldStatus = app.Status;
             app.Status = newStatus;
-            app.UpdatedAt = DateTime.Now;
+            app.UpdatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
 
             _context.ApplicationStatusHistories.Add(new ApplicationStatusHistory
             {
@@ -137,7 +137,7 @@ namespace PersonalCabinet.Controllers
                 OldStatus = oldStatus,
                 NewStatus = newStatus,
                 ChangedBy = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)),
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified),
                 Comment = $"Статус изменён администратором"
             });
             await _context.SaveChangesAsync();
@@ -162,7 +162,7 @@ namespace PersonalCabinet.Controllers
                 SenderId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)),
                 Message1 = messageText,
                 IsRead = true,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified)
             };
             _context.Messages.Add(message);
             await _context.SaveChangesAsync();
@@ -331,7 +331,7 @@ namespace PersonalCabinet.Controllers
             if (user == null)
                 return NotFound(new { message = "Пользователь не найден" });
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
-            user.UpdatedAt = DateTime.Now;
+            user.UpdatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Пароль успешно изменён" });
