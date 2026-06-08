@@ -18,6 +18,7 @@ namespace PersonalCabinet.Controllers
 
         public async Task<IActionResult> Index(string searchString, bool? unreadOnly, string sortOrder)
         {
+
             string userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return Challenge();
             long userId = long.Parse(userIdClaim);
