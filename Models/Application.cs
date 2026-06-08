@@ -35,19 +35,19 @@ public partial class Application
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
-    public string LastName { get; set; }
-    public string FirstName { get; set; }
-    public string MiddleName { get; set; }
-    public string ResidenceAddress { get; set; }
-    public string Phone { get; set; }
-    public string Inn { get; set; }
-    public string PassportSeries { get; set; }
-    public string PassportNumber { get; set; }
+    public string? LastName { get; set; }
+    public string? FirstName { get; set; }
+    public string? MiddleName { get; set; }
+    public string? ResidenceAddress { get; set; }
+    public string? Phone { get; set; }
+    public string? Inn { get; set; }
+    public string? PassportSeries { get; set; }
+    public string? PassportNumber { get; set; }
+    public string? PassportWhoIssued { get; set; }
+    public string? AddressRegistr { get; set; }
     public DateTime? PassportDate { get; set; }
     public long? SNILS { get; set; }
     public DateTime? DateSNILS { get; set; }
-    public string? PassportWhoIssued { get; set; }
-    public string? AddressRegistr { get; set; }
     public string? PaymentPlan { get; set; }
     public string? GuarantyingSupplier { get; set; }
     public string? OrganizationFullName { get; set; }
