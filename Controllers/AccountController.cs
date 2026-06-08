@@ -27,7 +27,6 @@ namespace PersonalCabinet.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            // Валидация
             if (string.IsNullOrWhiteSpace(model.Phone))
                 ModelState.AddModelError("Phone", "Поле Телефон обязательно");
             if (string.IsNullOrWhiteSpace(model.Password))
@@ -51,6 +50,7 @@ namespace PersonalCabinet.Controllers
 
             if (model.UserType == "Organization")
             {
+                ModelState.Remove("FullName");
                 if (string.IsNullOrWhiteSpace(model.OrgFullName))
                     ModelState.AddModelError("OrgFullName", "Полное наименование обязательно");
                 if (string.IsNullOrWhiteSpace(model.OrgShortName))
