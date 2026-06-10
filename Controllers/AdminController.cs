@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PersonalCabinet.Models;
-using Rotativa.AspNetCore;
 using System.Security.Claims;
 
 namespace PersonalCabinet.Controllers
