@@ -38,9 +38,11 @@ if (!string.IsNullOrWhiteSpace(databaseUrl))
 }
 else
 {
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException(
-            "Database connection string is not configured.");
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (connectionString == null)
+    {
+        throw new Exception("Строка подключения не найдена.");
+    }
 }
 
 builder.Services.AddDataProtection()
