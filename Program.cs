@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using PersonalCabinet.Hubs;
+using PersonalCabinet.Middleware;
 using PersonalCabinet.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -64,6 +65,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 builder.Services.AddSignalR();
+builder.Services.AddMemoryCache();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -86,7 +88,7 @@ builder.Services.AddAntiforgery(options =>
 var app = builder.Build();
 
 app.UseForwardedHeaders();
-
+app.UseMiddleware<RateLimitingMiddleware>();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");

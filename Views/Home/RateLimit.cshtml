@@ -1,0 +1,74 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "Слишком много запросов";
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] | АО «ГНЦ НИИАР»</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/mainmenu.css" /> 
+    <style>
+        .hidden-btn {
+            display: none;
+        }
+        .access-message {
+            color: #0f5132;
+            background: #d1e7dd;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <h1>АО «ГНЦ НИИАР»</h1>
+            <p>Личный кабинет – технологическое присоединение</p>
+        </div>
+
+        <div class="card" style="text-align: center; max-width: 600px; margin: 40px auto;">
+            <div style="font-size: 64px; color: #d32f2f; margin-bottom: 20px;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h2 style="color: #005baa; margin-bottom: 15px;">Слишком много запросов</h2>
+            <p>Вы превысили допустимое количество запросов. Повторите попытку через:</p>
+            <div id="countdown" class="stat-num" style="font-size: 64px; font-weight: bold; color: #d32f2f; margin: 20px 0;">
+                @ViewBag.Seconds
+            </div>
+            <p>секунд</p>
+            <div id="accessMessage" style="margin-top: 20px;"></div>
+            <div style="margin-top: 30px;">
+                <a href="/" id="homeLink" class="btn-create hidden-btn">
+                    <i class="bi bi-house-door"></i> На главную
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let seconds = @ViewBag.Seconds;
+        const countdownElem = document.getElementById('countdown');
+        const homeLink = document.getElementById('homeLink');
+        const accessMessageDiv = document.getElementById('accessMessage');
+
+        const interval = setInterval(() => {
+            if (seconds <= 1) {
+                clearInterval(interval);
+                homeLink.classList.remove('hidden-btn');
+                accessMessageDiv.innerHTML = '<div class="access-message"><i class="bi bi-check-circle-fill"></i> Доступ разрешён! Нажмите "На главную".</div>';
+                countdownElem.style.color = "#2e7d32";
+                countdownElem.innerText = "0";
+                return;
+            }
+            seconds--;
+            countdownElem.innerText = seconds;
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+﻿using Microsoft.Extensions.Caching.Memory;
+
+namespace PersonalCabinet.Middleware
+{
+    public class RateLimitingMiddleware
+    {
+        private readonly RequestDelegate _next;
+        private readonly IMemoryCache _cache;
+
+        public RateLimitingMiddleware(RequestDelegate next, IMemoryCache cache)
+        {
+            _next = next;
+            _cache = cache;
+        }
+
+        public async Task InvokeAsync(HttpContext context)
+        {
+            string path = context.Request.Path.ToString();
+            if (path.StartsWith("/css/") || path.StartsWith("/js/") ||
+                path.StartsWith("/images/") || path.StartsWith("/lib/") ||
+                path == "/Home/RateLimit")
+            {
+                await _next(context);
+                return;
+            }
+
+            string clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            string countKey = $"rate_count_{clientIp}";
+            string unlockKey = $"rate_unlock_{clientIp}";
+            if (_cache.TryGetValue(unlockKey, out DateTime unlockTime) && unlockTime > DateTime.UtcNow)
+            {
+                int remainingSeconds = (int)(unlockTime - DateTime.UtcNow).TotalSeconds;
+                if (remainingSeconds < 1) remainingSeconds = 1;
+                context.Response.Redirect($"/Home/RateLimit?seconds={remainingSeconds}");
+                return;
+            }
+            if (!_cache.TryGetValue(countKey, out int requestCount))
+            {
+                _cache.Set(countKey, 1, TimeSpan.FromSeconds(60));
+                await _next(context);
+                return;
+            }
+
+            if (requestCount >= 30) 
+            {
+                _cache.Set(unlockKey, DateTime.UtcNow.AddSeconds(60), TimeSpan.FromSeconds(60));
+                _cache.Remove(countKey);
+                context.Response.Redirect("/Home/RateLimit?seconds=60");
+                return;
+            }
+            _cache.Set(countKey, requestCount + 1, TimeSpan.FromSeconds(60));
+            await _next(context);
+        }
+    }
+}

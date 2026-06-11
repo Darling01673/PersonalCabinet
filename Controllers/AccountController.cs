@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using PersonalCabinet.Models;
 using PersonalCabinet.ViewModels;
 using System.Security.Claims;
@@ -11,10 +12,12 @@ namespace PersonalCabinet.Controllers
     public class AccountController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMemoryCache _cache;
 
-        public AccountController(ApplicationDbContext context)
+        public AccountController(ApplicationDbContext context, IMemoryCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         [HttpGet]
@@ -126,13 +129,38 @@ namespace PersonalCabinet.Controllers
         {
             if (!ModelState.IsValid)
                 return View(model);
-
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
+            string cacheKey = $"login_attempts_{model.Email}";
+            var attemptData = _cache.Get<(int Attempts, DateTime? LockoutEnd)>(cacheKey);
+            int failedAttempts = attemptData.Attempts;
+            DateTime? lockoutEnd = attemptData.LockoutEnd;
+            if (lockoutEnd.HasValue && lockoutEnd > DateTime.UtcNow)
             {
-                ModelState.AddModelError("", "Неверный email или пароль");
+                int remainingMinutes = (int)(lockoutEnd.Value - DateTime.UtcNow).TotalMinutes;
+                if (remainingMinutes < 1) remainingMinutes = 1;
+                ModelState.AddModelError("", $"Слишком много неудачных попыток. Попробуйте через {remainingMinutes} минут.");
                 return View(model);
             }
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+            bool isPasswordValid = user != null && BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
+
+            if (!isPasswordValid)
+            {
+                failedAttempts++;
+                lockoutEnd = null;
+
+                if (failedAttempts >= 3)
+                {
+                    lockoutEnd = DateTime.UtcNow.AddMinutes(10);
+                    ModelState.AddModelError("", "Превышено количество попыток входа. Аккаунт заблокирован на 10 минут.");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Неверный email или пароль.");
+                }
+                _cache.Set(cacheKey, (failedAttempts, lockoutEnd), TimeSpan.FromMinutes(15));
+                return View(model);
+            }
+            _cache.Remove(cacheKey);
 
             await SignInAsync(user, model.RememberMe);
 
