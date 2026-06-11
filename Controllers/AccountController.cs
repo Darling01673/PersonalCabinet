@@ -30,36 +30,21 @@ namespace PersonalCabinet.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            var formUserType = Request.Form["UserType"].ToString();
+            if (!string.IsNullOrEmpty(formUserType))
+                model.UserType = formUserType;
+            string consent = Request.Form["PersonalDataConsent"];
+            if (consent != "true" && consent != "on" && consent != "True")
+                ModelState.AddModelError("", "Необходимо согласие на обработку персональных данных");
+            bool emailExists = await _context.Users.AnyAsync(u => u.Email == model.Email);
+            if (emailExists)
+                ModelState.AddModelError("Email", "Пользователь с таким email уже существует");
+            string confirmPassword = Request.Form["ConfirmPassword"];
+            if (model.Password != confirmPassword)
+                ModelState.AddModelError("ConfirmPassword", "Пароли не совпадают");
             if (model.UserType == "Organization")
             {
                 ModelState.Remove("FullName");
-            }
-            else
-            {
-                ModelState.Remove("OrgFullName");
-                ModelState.Remove("OrgShortName");
-                ModelState.Remove("ContactPerson");
-            }
-            string consent = Request.Form["PersonalDataConsent"];
-            if (consent != "true" && consent != "on" && consent != "True")
-            {
-                ModelState.AddModelError("", "Необходимо согласие на обработку персональных данных");
-                return View(model);
-            }
-            bool emailExists = await _context.Users.AnyAsync(u => u.Email == model.Email);
-            if (emailExists)
-            {
-                ModelState.AddModelError("Email", "Пользователь с таким email уже существует");
-                return View(model);
-            }
-            string confirmPassword = Request.Form["ConfirmPassword"];
-            if (model.Password != confirmPassword)
-            {
-                ModelState.AddModelError("ConfirmPassword", "Пароли не совпадают");
-                return View(model);
-            }
-            if (model.UserType == "Organization")
-            {
                 if (string.IsNullOrWhiteSpace(model.OrgFullName))
                     ModelState.AddModelError("OrgFullName", "Полное наименование обязательно");
                 if (string.IsNullOrWhiteSpace(model.OrgShortName))
@@ -69,10 +54,12 @@ namespace PersonalCabinet.Controllers
             }
             else
             {
+                ModelState.Remove("OrgFullName");
+                ModelState.Remove("OrgShortName");
+                ModelState.Remove("ContactPerson");
                 if (string.IsNullOrWhiteSpace(model.FullName))
                     ModelState.AddModelError("FullName", "ФИО обязательно");
             }
-
             if (!ModelState.IsValid)
                 return View(model);
             User user = new User
