@@ -63,7 +63,6 @@
                                 <td>@app.ApplicationNumber</td>
                                    <td>@app.Title</td>
                                      <td>
-                                            <td>
                                         @if (app.ApplicantType == "INDIVIDUAL")
                                         {
                                             var fullName = $"{app.LastName} {app.FirstName} {app.MiddleName}".Trim();
@@ -84,8 +83,7 @@
                                         {
                                             @(app.User?.Email ?? "—")
                                         }
-                             </td>
-                        </td>
+                                    </td>
                    <td>
                                     @(app.ApplicantType == "INDIVIDUAL" ? "Физ. лицо" :
                                           app.ApplicantType == "ORGANIZATION" ? "Организация" : "—")

@@ -400,5 +400,29 @@ namespace PersonalCabinet.Controllers
                 _ => "INDIVIDUAL"
             };
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetUnreadCount()
+        {
+            if (!User.Identity.IsAuthenticated) return Ok(0);
+
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!long.TryParse(userIdClaim, out long userId)) return Ok(0);
+
+            int unreadCount;
+            if (User.IsInRole("Admin"))
+            {
+                unreadCount = await _context.Messages
+                    .CountAsync(m => m.IsRead == false && m.Sender.Role != "Admin");
+            }
+            else
+            {
+                unreadCount = await (from m in _context.Messages
+                                     join a in _context.Applications on m.ApplicationId equals a.Id
+                                     where m.IsRead == false && m.SenderId != userId && a.UserId == userId
+                                     select m).CountAsync();
+            }
+            return Ok(unreadCount);
+        }
     }
 }
