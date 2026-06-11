@@ -115,7 +115,7 @@
                     <div class="col-4 fw-bold">Тип заявителя:</div>
                     <div class="col-8">
                         @(Model.ApplicantType == "INDIVIDUAL" ? "Физическое лицо" :
-                              Model.ApplicantType == "ORGANIZATION" ? "Юридическое лицо / Организация" : "—")
+                                  Model.ApplicantType == "ORGANIZATION" ? "Юридическое лицо / Организация" : "—")
                     </div>
                 </div>
 
@@ -152,10 +152,10 @@
         </div>
 
         <div class="card-cabinet mt-4">
-    <div class="card-header"><i class="bi bi-chat-dots"></i> Чат с заявителем</div>
-    <div class="card-body p-0">
-        <div id="chat-window" style="display: flex; flex-direction: column; height: 495px;">
-            <div class="chat-messages" id="chat-messages">
+            <div class="card-header"><i class="bi bi-chat-dots"></i> Чат с заявителем</div>
+            <div class="card-body p-0">
+                <div id="chat-window" style="display: flex; flex-direction: column; height: 495px;">
+                    <div class="chat-messages" id="chat-messages">
                         @foreach (var msg in Model.Messages.OrderBy(m => m.CreatedAt))
                         {
                             string senderName = "Пользователь";
@@ -172,32 +172,32 @@
                                 else
                                     senderName = msg.Sender.Email;
                             }
-                        <div class="chat-message @(msg.SenderId == (long?)ViewBag.CurrentUserId ? "user" : "operator")">
-                            <p>@msg.Message1</p>
-                            <small>@senderName · @msg.CreatedAt?.ToString("dd.MM.yyyy HH:mm")</small>
-                        </div>
+                                <div class="chat-message @(msg.SenderId == (long?)ViewBag.CurrentUserId ? "user" : "operator")">
+                                    <p>@msg.Message1</p>
+                                    <small>@senderName · @msg.CreatedAt?.ToString("dd.MM.yyyy HH:mm")</small>
+                                </div>
                         }
-            </div>
-            <div class="chat-input">
-                <div id="chat-file-preview" style="display: none; padding: 6px 12px; background: #f8f9fa; border-top: 1px solid #eee; font-size: 13px; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
-                    <span id="chat-file-name" style="color: #495057; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
-                        <i class="bi bi-paperclip"></i> <span></span>
-                    </span>
-                    <button type="button" id="btn-remove-file" style="border: none; background: none; color: #dc3545; font-weight: bold; cursor: pointer; font-size: 16px; padding: 0;">&times;</button>
-                </div>
-                <form id="chat-form">
+                    </div>
+                    <div class="chat-input">
+                        <div id="chat-file-preview" style="display: none; padding: 6px 12px; background: #f8f9fa; border-top: 1px solid #eee; font-size: 13px; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
+                            <span id="chat-file-name" style="color: #495057; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                                <i class="bi bi-paperclip"></i> <span></span>
+                            </span>
+                            <button type="button" id="btn-remove-file" style="border: none; background: none; color: #dc3545; font-weight: bold; cursor: pointer; font-size: 16px; padding: 0;">&times;</button>
+                        </div>
+                        <form id="chat-form">
                             @Html.AntiForgeryToken()
-                    <button type="button" id="btn-attach" style="background: none; border: none; color: #6c757d; font-size: 1.25rem; cursor: pointer; padding: 0 8px;" title="Прикрепить файл">
-                        <i class="bi bi-paperclip"></i>
-                    </button>
-                    <input type="file" id="chat-file" style="display: none;" />
-                    <input type="text" id="chat-text" placeholder="Введите сообщение..." autocomplete="off" required />
-                    <button type="submit"><i class="bi bi-send-fill"></i></button>
-                </form>
+                            <button type="button" id="btn-attach" style="background: none; border: none; color: #6c757d; font-size: 1.25rem; cursor: pointer; padding: 0 8px;" title="Прикрепить файл">
+                                <i class="bi bi-paperclip"></i>
+                            </button>
+                            <input type="file" id="chat-file" style="display: none;" />
+                            <input type="text" id="chat-text" placeholder="Введите сообщение..." autocomplete="off" required />
+                            <button type="submit"><i class="bi bi-send-fill"></i></button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
     </div>
 </div>
 
@@ -206,6 +206,7 @@
     <a href="/Admin/Print/@Model.Id" class="btn-cabinet-outline" target="_blank">Создать отчёт</a>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const chatForm = document.getElementById('chat-form');
@@ -217,7 +218,6 @@
         const fileNameSpan = document.querySelector('#chat-file-name span');
         const btnRemoveFile = document.getElementById('btn-remove-file');
         const applicationId = @Model.Id;
-        let lastMessageId = @(Model.Messages.Any() ? Model.Messages.Max(m => m.Id) : 0);
 
         function scrollToBottom() {
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -266,7 +266,30 @@
         if (btnRemoveFile) {
             btnRemoveFile.addEventListener('click', resetFile);
         }
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .withAutomaticReconnect()
+            .build();
 
+        function addMessageToChat(data) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${data.isOwn ? 'user' : 'operator'}`;
+            const date = new Date(data.createdAt);
+            const timeStr = date.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            messageDiv.innerHTML = `<p>${escapeHtml(data.messageText)}</p><small>${escapeHtml(data.senderName)} · ${timeStr}</small>`;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        connection.on("ReceiveMessage", (data) => {
+            if (!data.isOwn) {
+                addMessageToChat(data);
+            }
+        });
+
+        connection.start()
+            .then(() => connection.invoke("JoinApplicationGroup", applicationId))
+            .catch(err => console.error("SignalR ошибка:", err));
         chatForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const text = chatText.value.trim();
@@ -303,6 +326,7 @@
                     return;
                 }
             }
+
             const formDataMsg = new FormData();
             formDataMsg.append('id', applicationId);
             formDataMsg.append('messageText', finalMessage);
@@ -315,10 +339,10 @@
                     headers: { 'RequestVerificationToken': tokenMsg }
                 });
                 if (response.ok) {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = 'chat-message user';
                     const now = new Date();
                     const timeStr = now.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'chat-message user';
                     messageDiv.innerHTML = `<p>${escapeHtml(finalMessage)}</p><small>Оператор · ${timeStr}</small>`;
                     messagesContainer.appendChild(messageDiv);
                     chatText.value = '';
@@ -341,29 +365,5 @@
             li.innerHTML = `<span>${escapeHtml(fileName)}</span> <small class="text-muted">(загружен сейчас, обновите страницу для скачивания)</small> (${today})`;
             docBlock.appendChild(li);
         }
-
-        async function fetchNewMessages() {
-            try {
-                const response = await fetch(`/Admin/GetNewMessages?id=@Model.Id&lastMessageId=${lastMessageId}`);
-                if (!response.ok) throw new Error('Ошибка загрузки');
-                const messages = await response.json();
-                if (messages.length === 0) return;
-
-                for (const msg of messages) {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = `chat-message ${msg.isOwn ? 'user' : 'operator'}`;
-                    const date = new Date(msg.createdAt);
-                    const timeStr = date.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                    messageDiv.innerHTML = `<p>${escapeHtml(msg.message1)}</p><small>${escapeHtml(msg.senderName)} · ${timeStr}</small>`;
-                    messagesContainer.appendChild(messageDiv);
-                    lastMessageId = msg.id;
-                }
-                scrollToBottom();
-            } catch (err) {
-                console.error('Polling error:', err);
-            }
-        }
-
-        setInterval(fetchNewMessages, 3000);
     });
 </script>
