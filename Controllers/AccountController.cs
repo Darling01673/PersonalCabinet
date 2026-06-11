@@ -129,6 +129,7 @@ namespace PersonalCabinet.Controllers
         {
             if (!ModelState.IsValid)
                 return View(model);
+
             string cacheKey = $"login_attempts_{model.Email}";
             var attemptData = _cache.Get<(int Attempts, DateTime? LockoutEnd)>(cacheKey);
             int failedAttempts = attemptData.Attempts;
@@ -140,6 +141,7 @@ namespace PersonalCabinet.Controllers
                 ModelState.AddModelError("", $"Слишком много неудачных попыток. Попробуйте через {remainingMinutes} минут.");
                 return View(model);
             }
+
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
             bool isPasswordValid = user != null && BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
 
@@ -155,13 +157,14 @@ namespace PersonalCabinet.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Неверный email или пароль.");
+                    int remainingAttempts = 3 - failedAttempts;
+                    ModelState.AddModelError("", $"Неверный email или пароль. Осталось попыток: {remainingAttempts}.");
                 }
+
                 _cache.Set(cacheKey, (failedAttempts, lockoutEnd), TimeSpan.FromMinutes(15));
                 return View(model);
             }
             _cache.Remove(cacheKey);
-
             await SignInAsync(user, model.RememberMe);
 
             if (user.Role == "Admin")
