@@ -236,7 +236,7 @@
                 messageDiv.className = 'chat-message user';
                 const now = new Date();
                 const timeStr = now.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                messageDiv.innerHTML = `<p>${escapeHtml(text)}</p><small>Администратор · ${timeStr}</small>`;
+                messageDiv.innerHTML = `<p>${escapeHtml(text)}</p><small>Оператор · ${timeStr}</small>`;
                 messagesContainer.appendChild(messageDiv);
                 chatText.value = '';
                 scrollToBottom();

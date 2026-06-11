@@ -243,10 +243,11 @@ namespace PersonalCabinet.Controllers
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                Console.WriteLine($"[ERROR] {ex.ToString()}");
-                ModelState.AddModelError("", "Ошибка при сохранении: " + ex.Message);
+                var fullMessage = ex.Message;
                 if (ex.InnerException != null)
-                    ModelState.AddModelError("", "Внутренняя ошибка: " + ex.InnerException.Message);
+                    fullMessage += " | Inner: " + ex.InnerException.Message;
+                Console.WriteLine($"[ERROR] {fullMessage}");
+                ModelState.AddModelError("", "Ошибка при сохранении: " + fullMessage);
                 return View(model);
             }
         }
