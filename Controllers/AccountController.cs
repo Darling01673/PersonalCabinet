@@ -124,14 +124,17 @@ namespace PersonalCabinet.Controllers
                 return View(model);
 
             string cacheKey = $"login_attempts_{model.Email}";
-            var attemptData = _cache.Get<(int Attempts, DateTime? LockoutEnd)>(cacheKey);
-            int failedAttempts = attemptData.Attempts;
-            DateTime? lockoutEnd = attemptData.LockoutEnd;
-            if (lockoutEnd.HasValue && lockoutEnd > DateTime.UtcNow)
+            string countKey = "login_attempts_count_" + model.Email;
+            string lockoutKey = "login_attempts_lockout_" + model.Email;
+            int failedAttempts = _cache.Get<int?>(countKey) ?? 0;
+            DateTime? lockoutEnd = _cache.Get<DateTime?>(lockoutKey);
+
+            if (lockoutEnd != null && lockoutEnd > DateTime.UtcNow)
             {
-                int remainingMinutes = (int)(lockoutEnd.Value - DateTime.UtcNow).TotalMinutes;
+                int remainingMinutes = (int)Math.Ceiling((lockoutEnd.Value - DateTime.UtcNow).TotalMinutes);
                 if (remainingMinutes < 1) remainingMinutes = 1;
-                ModelState.AddModelError("", $"Слишком много неудачных попыток. Попробуйте через {remainingMinutes} минут.");
+
+                ModelState.AddModelError("", "Слишком много неудачных попыток. Попробуйте через " + remainingMinutes + " минут.");
                 return View(model);
             }
 
