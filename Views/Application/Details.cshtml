@@ -309,105 +309,123 @@
         if (btnRemoveFile) {
             btnRemoveFile.addEventListener('click', resetFile);
         }
-
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chatHub")
             .withAutomaticReconnect()
             .build();
 
-        connection.on("ReceiveMessage", function (data) {
+        function addMessageToChat(data) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = 'chat-message ' + (data.isOwn ? 'user' : 'operator');
-            messageDiv.innerHTML = `<p>${escapeHtml(data.messageText)}</p><small>${escapeHtml(data.senderName)} · ${escapeHtml(data.createdAt)}</small>`;
+            messageDiv.className = `chat-message ${data.isOwn ? 'user' : 'operator'}`;
+            const date = new Date(data.createdAt);
+            const timeStr = date.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            messageDiv.innerHTML = `<p>${escapeHtml(data.messageText)}</p><small>${escapeHtml(data.senderName)} · ${timeStr}</small>`;
             messagesContainer.appendChild(messageDiv);
             scrollToBottom();
-        });
-
-        connection.start()
-            .then(function () {
-                return connection.invoke("JoinApplicationGroup", applicationId);
-            })
-            .catch(function (err) {
-                console.error("Ошибка подключения к чату:", err.toString());
-            });
-
-        if (chatForm) {
-            chatForm.addEventListener('submit', async function (e) {
-                e.preventDefault();
-                if (applicationStatus === 'Draft') {
-                    alert('Невозможно отправить сообщение: заявка находится в статусе "Черновик". Отправьте заявку на рассмотрение.');
-                    return;
-                }
-                const text = chatText.value.trim();
-                const hasFile = chatFile && chatFile.files && chatFile.files.length > 0;
-
-                if (!text && !hasFile) return;
-
-                let finalMessage = text;
-
-                if (hasFile) {
-                    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-                    const token = tokenInput ? tokenInput.value : '';
-
-                    const formData = new FormData();
-                    formData.append('id', applicationId);
-                    formData.append('file', chatFile.files[0]);
-                    formData.append('__RequestVerificationToken', token);
-
-                    try {
-                        const response = await fetch('/Application/AddDocument', {
-                            method: 'POST',
-                            body: formData
-                        });
-
-                        if (response.ok) {
-                            const fileName = chatFile.files[0].name;
-                            const fileNotification = `Добавлен документ: ${fileName}`;
-                            finalMessage = finalMessage ? `${finalMessage}\n${fileNotification}` : fileNotification;
-                            updateDocumentsUI(fileName);
-                        } else {
-                            alert('Ошибка загрузки документа на сервер.');
-                            return;
-                        }
-                    } catch (err) {
-                        console.error("Ошибка при отправке файла через AddDocument:", err);
-                        alert('Не удалось прикрепить файл.');
-                        return;
-                    }
-                }
-
-                connection.invoke("SendMessage", applicationId, finalMessage)
-                    .then(function () {
-                        chatText.value = '';
-                        resetFile();
-                    })
-                    .catch(function (err) {
-                        console.error("Ошибка отправки:", err.toString());
-                    });
-            });
         }
 
-        function updateDocumentsUI(fileName) {
-    const documentsCard = document.getElementById('documents-card');
-    if (!documentsCard) return;
-    const cardBody = documentsCard.querySelector('.card-body');
-    if (!cardBody) return;
-    const noDocsMsg = document.getElementById('no-documents-message');
-    if (noDocsMsg) {
-        noDocsMsg.remove();
-    }
-    let docList = document.getElementById('documents-list') || cardBody.querySelector('ul');
-    if (!docList) {
-        docList = document.createElement('ul');
-        docList.id = 'documents-list';
-        cardBody.appendChild(docList);
-    }
+        connection.on("ReceiveMessage", (data) => {
+            if (!data.isOwn) {
+                addMessageToChat(data);
+            }
+        });
 
-    const today = new Date().toLocaleDateString('ru-RU');
-    const li = document.createElement('li');
-    li.innerHTML = `<span>${escapeHtml(fileName)}</span> <small class="text-muted">(загружен сейчас, обновите страницу для скачивания)</small> (${today})`;
-    docList.appendChild(li);
-}
+        function joinGroup() {
+            connection.invoke("JoinApplicationGroup", applicationId)
+                .catch(err => console.error("Ошибка подписки на группу чата:", err));
+        }
+
+        connection.start()
+            .then(() => {
+                console.log("SignalR подключён");
+                joinGroup();
+            })
+            .catch(err => console.error("SignalR ошибка:", err));
+
+        connection.onreconnected(() => {
+            console.log("SignalR переподключён, восстанавливаем подписки");
+            joinGroup();
+        });
+        chatForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            if (applicationStatus === 'Draft') {
+                alert('Невозможно отправить сообщение: заявка находится в статусе "Черновик". Отправьте заявку на рассмотрение.');
+                return;
+            }
+            const text = chatText.value.trim();
+            const hasFile = chatFile && chatFile.files && chatFile.files.length > 0;
+
+            if (!text && !hasFile) return;
+
+            let finalMessage = text;
+
+            if (hasFile) {
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                const token = tokenInput ? tokenInput.value : '';
+
+                const formData = new FormData();
+                formData.append('id', applicationId);
+                formData.append('file', chatFile.files[0]);
+                formData.append('__RequestVerificationToken', token);
+
+                try {
+                    const response = await fetch('/Application/AddDocument', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (response.ok) {
+                        const fileName = chatFile.files[0].name;
+                        const fileNotification = `Добавлен документ: ${fileName}`;
+                        finalMessage = finalMessage ? `${finalMessage}\n${fileNotification}` : fileNotification;
+                        updateDocumentsUI(fileName);
+                    } else {
+                        alert('Ошибка загрузки документа на сервер.');
+                        return;
+                    }
+                } catch (err) {
+                    console.error("Ошибка при отправке файла:", err);
+                    alert('Не удалось прикрепить файл.');
+                    return;
+                }
+            }
+
+            try {
+                await connection.invoke("SendMessage", applicationId, finalMessage);
+                const now = new Date();
+                const timeStr = now.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-message user';
+                messageDiv.innerHTML = `<p>${escapeHtml(finalMessage)}</p><small>Пользователь · ${timeStr}</small>`;
+                messagesContainer.appendChild(messageDiv);
+                chatText.value = '';
+                resetFile();
+                scrollToBottom();
+            } catch (err) {
+                console.error("Ошибка отправки сообщения:", err);
+                alert('Не удалось отправить сообщение.');
+            }
+        });
+
+        function updateDocumentsUI(fileName) {
+            const documentsCard = document.getElementById('documents-card');
+            if (!documentsCard) return;
+            const cardBody = documentsCard.querySelector('.card-body');
+            if (!cardBody) return;
+            const noDocsMsg = document.getElementById('no-documents-message');
+            if (noDocsMsg) {
+                noDocsMsg.remove();
+            }
+            let docList = document.getElementById('documents-list') || cardBody.querySelector('ul');
+            if (!docList) {
+                docList = document.createElement('ul');
+                docList.id = 'documents-list';
+                cardBody.appendChild(docList);
+            }
+            const today = new Date().toLocaleDateString('ru-RU');
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${escapeHtml(fileName)}</span> <small class="text-muted">(загружен сейчас, обновите страницу для скачивания)</small> (${today})`;
+            docList.appendChild(li);
+        }
 
         window.addEventListener('beforeunload', function () {
             if (connection) {
@@ -415,30 +433,4 @@
             }
         });
     });
-    const connection = new signalR.HubConnectionBuilder()
-    .withUrl("/chatHub")
-    .withAutomaticReconnect()
-    .build();
-
-function joinGroups() {
-    connection.invoke("JoinApplicationGroup", applicationId)
-        .catch(err => console.error("Ошибка подписки на группу чата:", err));
-}
-
-connection.on("ReceiveMessage", (data) => {
-    if (!data.isOwn) {
-        addMessageToChat(data);
-    }
-});
-
-connection.start()
-    .then(() => {
-        console.log("SignalR подключён");
-        joinGroups();
-    })
-    .catch(err => console.error("SignalR ошибка:", err));
-connection.onreconnected(() => {
-    console.log("SignalR переподключён, восстанавливаем подписки");
-    joinGroups();
-});
 </script>

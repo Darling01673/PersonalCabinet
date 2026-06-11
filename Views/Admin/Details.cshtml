@@ -287,9 +287,22 @@
             }
         });
 
+        function joinGroup() {
+            connection.invoke("JoinApplicationGroup", applicationId)
+                .catch(err => console.error("Ошибка подписки на группу чата:", err));
+        }
+
         connection.start()
-            .then(() => connection.invoke("JoinApplicationGroup", applicationId))
+            .then(() => {
+                console.log("SignalR подключён");
+                joinGroup();
+            })
             .catch(err => console.error("SignalR ошибка:", err));
+
+        connection.onreconnected(() => {
+            console.log("SignalR переподключён, восстанавливаем подписки");
+            joinGroup();
+        });
         chatForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const text = chatText.value.trim();
@@ -327,32 +340,21 @@
                 }
             }
 
-            const formDataMsg = new FormData();
-            formDataMsg.append('id', applicationId);
-            formDataMsg.append('messageText', finalMessage);
-            const tokenMsg = document.querySelector('input[name="__RequestVerificationToken"]').value;
-
+            // Отправляем через SignalR
             try {
-                const response = await fetch('/Admin/SendMessage', {
-                    method: 'POST',
-                    body: formDataMsg,
-                    headers: { 'RequestVerificationToken': tokenMsg }
-                });
-                if (response.ok) {
-                    const now = new Date();
-                    const timeStr = now.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = 'chat-message user';
-                    messageDiv.innerHTML = `<p>${escapeHtml(finalMessage)}</p><small>Оператор · ${timeStr}</small>`;
-                    messagesContainer.appendChild(messageDiv);
-                    chatText.value = '';
-                    resetFile();
-                    scrollToBottom();
-                } else {
-                    alert('Ошибка отправки сообщения');
-                }
+                await connection.invoke("SendMessage", applicationId, finalMessage);
+                // Оптимистичное добавление своего сообщения (чтобы сразу видеть)
+                const now = new Date();
+                const timeStr = now.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-message user';
+                messageDiv.innerHTML = `<p>${escapeHtml(finalMessage)}</p><small>Оператор · ${timeStr}</small>`;
+                messagesContainer.appendChild(messageDiv);
+                chatText.value = '';
+                resetFile();
+                scrollToBottom();
             } catch (err) {
-                console.error("Ошибка отправки сообщения:", err);
+                console.error("Ошибка отправки сообщения через SignalR:", err);
                 alert('Не удалось отправить сообщение.');
             }
         });
@@ -366,31 +368,4 @@
             docBlock.appendChild(li);
         }
     });
-    const connection = new signalR.HubConnectionBuilder()
-    .withUrl("/chatHub")
-    .withAutomaticReconnect()
-    .build();
-
-function joinGroups() {
-    connection.invoke("JoinApplicationGroup", applicationId)
-        .catch(err => console.error("Ошибка подписки на группу чата:", err));
-}
-
-connection.on("ReceiveMessage", (data) => {
-    if (!data.isOwn) {
-        addMessageToChat(data);
-    }
-});
-
-connection.start()
-    .then(() => {
-        console.log("SignalR подключён");
-        joinGroups();
-    })
-    .catch(err => console.error("SignalR ошибка:", err));
-
-connection.onreconnected(() => {
-    console.log("SignalR переподключён, восстанавливаем подписки");
-    joinGroups();
-});
 </script>

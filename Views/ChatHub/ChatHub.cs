@@ -18,6 +18,7 @@ namespace PersonalCabinet.Hubs
         {
             _context = context;
         }
+
         public async Task SubscribeToNotifications()
         {
             var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
