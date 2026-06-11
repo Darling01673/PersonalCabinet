@@ -30,6 +30,16 @@ namespace PersonalCabinet.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            if (model.UserType == "Organization")
+            {
+                ModelState.Remove("FullName");
+            }
+            else
+            {
+                ModelState.Remove("OrgFullName");
+                ModelState.Remove("OrgShortName");
+                ModelState.Remove("ContactPerson");
+            }
             string consent = Request.Form["PersonalDataConsent"];
             if (consent != "true" && consent != "on" && consent != "True")
             {

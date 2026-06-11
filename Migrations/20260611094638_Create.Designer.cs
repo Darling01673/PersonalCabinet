@@ -12,8 +12,8 @@ using PersonalCabinet.Models;
 namespace PersonalCabinet.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260608140043_NullableModel")]
-    partial class NullableModel
+    [Migration("20260611094638_Create")]
+    partial class Create
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -85,7 +85,6 @@ namespace PersonalCabinet.Migrations
                         .HasColumnName("extra_data");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("FirstName");
 
@@ -94,17 +93,14 @@ namespace PersonalCabinet.Migrations
                         .HasColumnName("GuarantyingSupplier");
 
                     b.Property<string>("Inn")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("Inn");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("LastName");
 
                     b.Property<string>("MiddleName")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("MiddleName");
 
@@ -125,12 +121,10 @@ namespace PersonalCabinet.Migrations
                         .HasColumnType("date");
 
                     b.Property<string>("PassportNumber")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("PassportNumber");
 
                     b.Property<string>("PassportSeries")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("PassportSeries");
 
@@ -143,7 +137,6 @@ namespace PersonalCabinet.Migrations
                         .HasColumnName("PaymentPlan");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("Phone");
 
@@ -160,7 +153,6 @@ namespace PersonalCabinet.Migrations
                         .HasColumnName("requested_power");
 
                     b.Property<string>("ResidenceAddress")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("ResidenceAddress");
 
@@ -432,7 +424,6 @@ namespace PersonalCabinet.Migrations
                     b.ToTable("messages", (string)null);
                 });
 
-
             modelBuilder.Entity("PersonalCabinet.Models.OrganizationProfile", b =>
                 {
                     b.Property<long>("Id")
@@ -659,7 +650,6 @@ namespace PersonalCabinet.Migrations
                     b.Navigation("Sender");
                 });
 
-
             modelBuilder.Entity("PersonalCabinet.Models.OrganizationProfile", b =>
                 {
                     b.HasOne("PersonalCabinet.Models.User", "User")
@@ -696,7 +686,6 @@ namespace PersonalCabinet.Migrations
                 {
                     b.Navigation("Documents");
                 });
-
 
             modelBuilder.Entity("PersonalCabinet.Models.User", b =>
                 {
