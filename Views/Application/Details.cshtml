@@ -76,24 +76,24 @@
             </div>
         </div>
 
-        <div class="card-cabinet mt-4">
-            <div class="card-header">Документы</div>
-            <div class="card-body">
+       <div class="card-cabinet mt-4" id="documents-card">
+    <div class="card-header">Документы</div>
+    <div class="card-body">
                 @if (Model.Documents.Any())
                 {
-                        <ul>
+                <ul>
                         @foreach (var d in Model.Documents)
                         {
-                                    <li><a href="@d.FilePath" target="_blank">@d.OriginalFileName</a> (@d.UploadedAt?.ToString("dd.MM.yyyy"))</li>
+                            <li><a href="@d.FilePath" target="_blank">@d.OriginalFileName</a> (@d.UploadedAt?.ToString("dd.MM.yyyy"))</li>
                         }
-                        </ul>
+                </ul>
                 }
                 else
                 {
-                        <p>Нет документов.</p>
+                <p id="no-documents-message">Нет документов.</p>
                 }
-            </div>
-        </div>
+    </div>
+</div>
     </div>
 
     <div class="col-md-5">
@@ -388,26 +388,26 @@
         }
 
         function updateDocumentsUI(fileName) {
-            const cardBody = document.querySelector('.card-cabinet .card-body');
-            if (!cardBody) return;
+    const documentsCard = document.getElementById('documents-card');
+    if (!documentsCard) return;
+    const cardBody = documentsCard.querySelector('.card-body');
+    if (!cardBody) return;
+    const noDocsMsg = document.getElementById('no-documents-message');
+    if (noDocsMsg) {
+        noDocsMsg.remove();
+    }
+    let docList = document.getElementById('documents-list') || cardBody.querySelector('ul');
+    if (!docList) {
+        docList = document.createElement('ul');
+        docList.id = 'documents-list';
+        cardBody.appendChild(docList);
+    }
 
-            const noDocsMsg = document.getElementById('no-documents-message');
-            if (noDocsMsg) {
-                noDocsMsg.remove();
-            }
-
-            let docList = document.getElementById('documents-list') || cardBody.querySelector('ul');
-            if (!docList) {
-                docList = document.createElement('ul');
-                docList.id = 'documents-list';
-                cardBody.appendChild(docList);
-            }
-
-            const today = new Date().toLocaleDateString('ru-RU');
-            const li = document.createElement('li');
-            li.innerHTML = `<span>${escapeHtml(fileName)}</span> <small class="text-muted">(загружен сейчас, обновите страницу для скачивания)</small> (${today})`;
-            docList.appendChild(li);
-        }
+    const today = new Date().toLocaleDateString('ru-RU');
+    const li = document.createElement('li');
+    li.innerHTML = `<span>${escapeHtml(fileName)}</span> <small class="text-muted">(загружен сейчас, обновите страницу для скачивания)</small> (${today})`;
+    docList.appendChild(li);
+}
 
         window.addEventListener('beforeunload', function () {
             if (connection) {

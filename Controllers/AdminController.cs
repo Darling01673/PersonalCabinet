@@ -160,7 +160,7 @@ namespace PersonalCabinet.Controllers
                 ApplicationId = id,
                 SenderId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)),
                 Message1 = messageText,
-                IsRead = true,
+                IsRead = false,
                 CreatedAt = DateTime.UtcNow
             };
             _context.Messages.Add(message);

@@ -45,7 +45,7 @@ public partial class Application
     public string? PassportWhoIssued { get; set; }
     public string? AddressRegistr { get; set; }
     public DateTime? PassportDate { get; set; }
-    public long? SNILS { get; set; }
+    public string? SNILS { get; set; }
     public DateTime? DateSNILS { get; set; }
     public string? PaymentPlan { get; set; }
     public string? GuarantyingSupplier { get; set; }

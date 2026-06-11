@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="utf-8" />
@@ -22,6 +25,34 @@
                 </a>
             </div>
             <div class="top-navbar__right">
+                @{
+                    int unreadCount = 0;
+                    if (User.Identity.IsAuthenticated)
+                    {
+                        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                        if (long.TryParse(userIdClaim, out long userId))
+                        {
+                            if (User.IsInRole("Admin"))
+                            {
+                                unreadCount = DbContext.Messages.Count(m => m.IsRead == false && m.Sender.Role != "Admin");
+                            }
+                            else
+                            {
+                                unreadCount = (from m in DbContext.Messages
+                                               join a in DbContext.Applications on m.ApplicationId equals a.Id
+                                               where m.IsRead == false && m.SenderId != userId && a.UserId == userId
+                                               select m).Count();
+                            }
+                        }
+                    }
+                }
+                    <a href="@(User.IsInRole("Admin") ? "/Admin/Messages" : "/Messages/Index")" class="nav-icon-btn me-2" title="Сообщения">
+        <i class="bi bi-envelope-fill" style="font-size: 1.4rem;"></i>
+                    @if (unreadCount > 0)
+                    {
+                <span class="notification-badge">@unreadCount</span>
+                    }
+    </a>
                 <div class="top-navbar__profile dropdown">
                     <a href="#" class="nav-icon-btn dropdown-toggle" data-bs-toggle="dropdown" title="Профиль">
                         <i class="bi bi-person-circle"></i>

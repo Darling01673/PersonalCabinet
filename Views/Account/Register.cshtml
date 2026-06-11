@@ -11,7 +11,6 @@
     <title>АО «ГНЦ НИИАР» — Регистрация</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="/css/register.css" />
-
 </head>
 <body>
 <div class="reg-page">
@@ -49,7 +48,6 @@
                 </div>
             </div>
             <input type="hidden" name="UserType" id="userType" value="@Model.UserType" />
-
             <div class="form-section @(Model.UserType == "Individual" ? "active" : "")" id="sec-Individual">
                 <div class="form-group">
                     <label class="form-label">ФИО <span class="required">*</span></label>
@@ -111,12 +109,20 @@
                     </button>
                 </div>
             </div>
-
             <div class="consent">
-                <label>
-                    <input type="checkbox" name="PersonalDataConsent" value="true" />
-                    <span>Я даю согласие на обработку персональных данных</span>
-                </label>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <input type="checkbox" name="PersonalDataConsent" id="PersonalDataConsent" value="true" style="width: 18px; height: 18px;" />
+                    <label for="PersonalDataConsent" style="font-weight: normal;">Я даю согласие на обработку персональных данных</label>
+                    <a href="#" id="showConsentLink" style="font-size: 0.85rem; margin-left: auto; text-decoration: none; border-bottom: 1px dashed #005baa; color: #005baa;">
+                        <i class="bi bi-info-circle"></i> Подробнее
+                    </a>
+                </div>
+                <div id="consentFullText" style="display: none; margin-top: 12px; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; background: #f9fafb; font-size: 0.85rem; line-height: 1.4; color: #333;">
+                    <p><strong>Согласие на обработку персональных данных</strong></p>
+                    <p>Настоящим даю свое согласие оператору персональных данных – Акционерному обществу «Государственный научный центр - Научно-исследовательский институт атомных реакторов», 433510, Российская Федерация, Ульяновская область, г. Димитровград, шоссе Западное, 9, ОГРН: 1087302001797 (далее - АО «ГНЦ НИИАР») на обработку моих персональных данных, в том числе автоматизированную, в порядке и на условиях, определенных Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных», к которым относится фамилия, имя, отчество, снилс, номер телефона, адрес электронной почты.</p>
+                    <p>Я даю согласие на использование моих персональных данных в целях подачи заявки на "Портал технологического присоединения к электрическим сетям".</p>
+                    <p>Настоящее согласие предоставляется на осуществление любых действий в отношении моих персональных данных, которые необходимы или желаемы для достижения указанных выше целей, включая (без ограничения) сбор, систематизацию, накопление, хранение, уточнение (обновление, изменение), использование, обезличивание, блокирование, а также осуществление любых иных действий с моими персональными данными, предусмотренных действующим законодательством Российской Федерации.</p>
+                </div>
             </div>
 
             <button type="submit" class="btn-submit">
@@ -157,7 +163,6 @@
             if (section) section.classList.add('active');
         }
     });
-
     document.querySelectorAll('.toggle-password').forEach(button => {
         button.addEventListener('click', function() {
             const targetId = this.dataset.target;
@@ -174,6 +179,21 @@
             }
         });
     });
+
+    const link = document.getElementById('showConsentLink');
+    const textDiv = document.getElementById('consentFullText');
+    if (link && textDiv) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (textDiv.style.display === 'none' || textDiv.style.display === '') {
+                textDiv.style.display = 'block';
+                link.innerHTML = 'Скрыть';
+            } else {
+                textDiv.style.display = 'none';
+                link.innerHTML = 'Подробнее';
+            }
+        });
+    }
 </script>
 </body>
 </html>

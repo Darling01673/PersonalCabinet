@@ -234,14 +234,12 @@
             });
         }
 
-        // Прикрепление файла
         if (btnAttach) {
             btnAttach.addEventListener('click', function() {
                 chatFile.click();
             });
         }
 
-        // Предпросмотр файла
         if (chatFile) {
             chatFile.addEventListener('change', function () {
                 if (this.files && this.files.length > 0) {
@@ -269,7 +267,6 @@
             btnRemoveFile.addEventListener('click', resetFile);
         }
 
-        // Отправка сообщения (текст + возможно файл)
         chatForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const text = chatText.value.trim();
@@ -279,7 +276,6 @@
 
             let finalMessage = text;
 
-            // Если есть файл, сначала загружаем его через AddDocument
             if (hasFile) {
                 const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
                 const formData = new FormData();
@@ -296,7 +292,6 @@
                         const fileName = chatFile.files[0].name;
                         const fileNotification = `Добавлен документ: ${fileName}`;
                         finalMessage = finalMessage ? `${finalMessage}\n${fileNotification}` : fileNotification;
-                        // Обновляем UI (добавляем документ в список, если нужно)
                         updateDocumentsUI(fileName);
                     } else {
                         alert('Ошибка загрузки документа на сервер.');
@@ -308,8 +303,6 @@
                     return;
                 }
             }
-
-            // Отправляем текстовое сообщение (с возможным уведомлением о файле)
             const formDataMsg = new FormData();
             formDataMsg.append('id', applicationId);
             formDataMsg.append('messageText', finalMessage);
@@ -322,7 +315,6 @@
                     headers: { 'RequestVerificationToken': tokenMsg }
                 });
                 if (response.ok) {
-                    // Добавляем сообщение в чат немедленно (оптимистично)
                     const messageDiv = document.createElement('div');
                     messageDiv.className = 'chat-message user';
                     const now = new Date();
@@ -341,9 +333,7 @@
             }
         });
 
-        // Функция обновления списка документов (если нужно)
         function updateDocumentsUI(fileName) {
-            // Находим блок документов (можно создать, если его нет)
             const docBlock = document.querySelector('.card-cabinet .card-body ul');
             if (!docBlock) return;
             const today = new Date().toLocaleDateString('ru-RU');
@@ -352,7 +342,6 @@
             docBlock.appendChild(li);
         }
 
-        // Polling для новых сообщений (как было)
         async function fetchNewMessages() {
             try {
                 const response = await fetch(`/Admin/GetNewMessages?id=@Model.Id&lastMessageId=${lastMessageId}`);

@@ -74,27 +74,27 @@
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label-cabinet">Фамилия *</label>
-                                    <input type="text" name="LastName" class="form-control-cabinet" value="@Model.LastName" required />
+                                        <input type="text" name="LastName" oninput="this.value = this.value.replace(/[0-9]/g, '')"  class="form-control-cabinet" value="@Model.LastName" required />
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label-cabinet">Имя *</label>
-                                    <input type="text" name="FirstName" class="form-control-cabinet" value="@Model.FirstName" required />
+                                    <input type="text" name="FirstName" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="form-control-cabinet" value="@Model.FirstName" required />
                                 </div>
                                 <div class="col-md-4 mb-3">
                                         <label class="form-label-cabinet">Отчество *</label>
-                                        <input type="text" name="MiddleName" class="form-control-cabinet" value="@Model.MiddleName" required/>
+                                            <input type="text" name="MiddleName" oninput="this.value = this.value.replace(/[0-9]/g, '')"  class="form-control-cabinet" value="@Model.MiddleName" required/>
                                 </div>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label-cabinet">Место жительства *</label>
-                                <input type="text" name="ResidenceAddress" class="form-control-cabinet" value="@Model.ResidenceAddress" required />
+                                <input type="text" name="ResidenceAddress" class="form-control-cabinet"  value="@Model.ResidenceAddress" required />
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                         <label class="form-label-cabinet">СНИЛС *</label>
-                                        <input type="text" name="SNILS" class="form-control-cabinet" maxlength="11" value="@Model.SNILS" required />
+                                            <input type="text" name="SNILS" class="form-control-cabinet" oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="11" value="@Model.SNILS" required />
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label-cabinet">Дата получения СНИЛС</label>
@@ -104,12 +104,12 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label-cabinet">Контактный телефон</label>
-                                            <input type="tel" name="Phone" class="form-control-cabinet" maxlength="11"  value="@Model.Phone" required />
+                                    <label class="form-label-cabinet">Контактный телефон *</label>
+                                                <input type="tel" name="Phone"oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control-cabinet" maxlength="11"  value="@Model.Phone" required />
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label-cabinet">ИНН</label>
-                                        <input type="text" name="Inn" class="form-control-cabinet" maxlength="12" value="@Model.Inn" required  />
+                                    <label class="form-label-cabinet">ИНН *</label>
+                                            <input type="text" name="Inn" class="form-control-cabinet"oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="12" value="@Model.Inn" required  />
                                 </div>
                             </div>
 
@@ -118,11 +118,11 @@
                             <div class="row">
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label-cabinet">Серия *</label>
-                                    <input type="text" name="PassportSeries" class="form-control-cabinet" maxlength="4" value="@Model.PassportSeries" required />
+                                        <input type="text" name="PassportSeries" class="form-control-cabinet" oninput="this.value = this.value.replace(/[^0-9]/g, '')"maxlength="4" value="@Model.PassportSeries" required />
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label-cabinet">Номер *</label>
-                                    <input type="text" name="PassportNumber" class="form-control-cabinet" maxlength="6" value="@Model.PassportNumber" required />
+                                        <input type="text" name="PassportNumber" class="form-control-cabinet" oninput="this.value = this.value.replace(/[^0-9]/g, '')"maxlength="6" value="@Model.PassportNumber" required />
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label-cabinet">Дата выдачи *</label>
@@ -155,16 +155,16 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label-cabinet">Контактное лицо *</label>
-                                <input type="text" name="ContactPerson" class="form-control-cabinet" value="@Model.ContactPerson" required />
+                                    <input type="text" name="ContactPerson" oninput="this.value = this.value.replace(/[0-9]/g, '')"  class="form-control-cabinet" value="@Model.ContactPerson" required />
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label-cabinet">Контактный телефон</label>
-                                        <input type="tel" name="Phone" class="form-control-cabinet"  maxlength="11"  value="@Model.Phone" />
+                                    <label class="form-label-cabinet">Контактный телефон *</label>
+                                            <input type="tel" name="Phone"oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control-cabinet"  maxlength="11"  value="@Model.Phone" />
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label-cabinet">ИНН</label>
-                                    <input type="text" name="Inn" class="form-control-cabinet" maxlength="12" value="@Model.Inn" />
+                                    <label class="form-label-cabinet">ИНН *</label>
+                                        <input type="text" name="Inn" class="form-control-cabinet"oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="12" value="@Model.Inn" />
                                 </div>
                             </div>
                         </div>
@@ -202,17 +202,17 @@
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label class="form-label-cabinet">Запрашиваемая мощность (кВт) *</label>
-                        <input type="number" step="1" name="RequestedPower" class="form-control-cabinet"
+                        <input type="number" step="1" name="RequestedPower"oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control-cabinet"
        value="@Model.RequestedPower?.ToString()" required />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label-cabinet">Ранее присоединённая мощность (кВт) *</label>
-                        <input type="number" step="1" name="PreviousPowerKw" class="form-control-cabinet"
+                        <input type="number" step="1" name="PreviousPowerKw"oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="form-control-cabinet"
        value="@Model.PreviousPowerKw.ToString()" required />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label-cabinet">Общая присоединённая мощность (кВт) *</label>
-                       <input type="number" step="1" name="TotalPowerKw" class="form-control-cabinet"
+                       <input type="number" step="1" name="TotalPowerKw" oninput="this.value = this.value.replace(/[^0-9]/g, '')"class="form-control-cabinet"
        value="@Model.TotalPowerKw.ToString()" required />
                     </div>
                 </div>

@@ -12,7 +12,7 @@ namespace PersonalCabinet.ViewModels
         public string? ResidenceAddress { get; set; }
         public string? Phone { get; set; }
         public string? Inn { get; set; }
-        public long? SNILS { get; set; }
+        public string? SNILS { get; set; }
         public DateTime? DateSNILS { get; set; }
         public string? PassportSeries { get; set; }
         public string? PassportNumber { get; set; }
