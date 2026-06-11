@@ -46,7 +46,7 @@ namespace PersonalCabinet.Middleware
                 return;
             }
 
-            if (requestCount >= 50) 
+            if (requestCount >= 70) 
             {
                 _cache.Set(unlockKey, DateTime.UtcNow.AddSeconds(60), TimeSpan.FromSeconds(60));
                 _cache.Remove(countKey);

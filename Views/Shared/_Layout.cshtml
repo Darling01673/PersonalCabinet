@@ -102,50 +102,56 @@
     }
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
-    <script>
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/chatHub")
-            .withAutomaticReconnect()
-            .build();
-
-        function updateNotificationBadge() {
-            fetch('/Account/GetUnreadCount')
-                .then(response => response.json())
-                .then(data => {
-                    const envelopeLink = document.querySelector('.nav-icon-btn[title="Сообщения"]');
-                    if (!envelopeLink) return;
-                    let badge = envelopeLink.querySelector('.notification-badge');
-                    if (data > 0) {
-                        if (badge) {
-                            badge.textContent = data;
-                        } else {
-                            badge = document.createElement('span');
-                            badge.className = 'notification-badge';
-                            badge.textContent = data;
-                            envelopeLink.appendChild(badge);
-                        }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
+<script>
+    function updateNotificationBadge() {
+        fetch('/Account/GetUnreadCount')
+            .then(response => response.json())
+            .then(data => {
+                const envelopeLink = document.querySelector('.nav-icon-btn[title="Сообщения"]');
+                if (!envelopeLink) return;
+                let badge = envelopeLink.querySelector('.notification-badge');
+                if (data > 0) {
+                    if (badge) {
+                        badge.textContent = data;
                     } else {
-                        if (badge) badge.remove();
+                        badge = document.createElement('span');
+                        badge.className = 'notification-badge';
+                        badge.textContent = data;
+                        envelopeLink.appendChild(badge);
                     }
-                })
-                .catch(err => console.error('Ошибка обновления уведомлений:', err));
-        }
-
-        connection.start()
-            .then(() => {
-                console.log("SignalR подключён");
-                return connection.invoke("SubscribeToNotifications");
+                } else {
+                    if (badge) badge.remove();
+                }
+                console.log('Уведомления обновлены:', data);
             })
-            .then(() => {
-                console.log("Подписан на уведомления");
-            })
-            .catch(err => console.error("Ошибка SignalR:", err));
+            .catch(err => console.error('Ошибка обновления уведомлений:', err));
+    }
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/chatHub")
+        .withAutomaticReconnect()
+        .build();
 
-        connection.on("UpdateNotificationCount", () => {
+    connection.start()
+        .then(() => {
+            console.log("SignalR подключён");
+            return connection.invoke("SubscribeToNotifications");
+        })
+        .then(() => {
+            console.log("Подписан на уведомления");
             updateNotificationBadge();
-        });
-    </script>
+        })
+        .catch(err => console.error("Ошибка SignalR:", err));
+    connection.on("UpdateNotificationCount", () => {
+        console.log("Получено событие UpdateNotificationCount");
+        updateNotificationBadge();
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            updateNotificationBadge();
+        }
+    });
+</script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
