@@ -366,4 +366,31 @@
             docBlock.appendChild(li);
         }
     });
+    const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/chatHub")
+    .withAutomaticReconnect()
+    .build();
+
+function joinGroups() {
+    connection.invoke("JoinApplicationGroup", applicationId)
+        .catch(err => console.error("Ошибка подписки на группу чата:", err));
+}
+
+connection.on("ReceiveMessage", (data) => {
+    if (!data.isOwn) {
+        addMessageToChat(data);
+    }
+});
+
+connection.start()
+    .then(() => {
+        console.log("SignalR подключён");
+        joinGroups();
+    })
+    .catch(err => console.error("SignalR ошибка:", err));
+
+connection.onreconnected(() => {
+    console.log("SignalR переподключён, восстанавливаем подписки");
+    joinGroups();
+});
 </script>

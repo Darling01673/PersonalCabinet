@@ -22,6 +22,8 @@ namespace PersonalCabinet.Middleware
             if (path.StartsWith("/images/")) isExcluded = true;
             if (path.StartsWith("/lib/")) isExcluded = true;
             if (path.StartsWith("/Home/RateLimit")) isExcluded = true;
+            if  (path.StartsWith("/chatHub")) isExcluded = true;
+            if (path.StartsWith("/Admin/GetNewMessages")) isExcluded = true;
 
             if (isExcluded)
             {
@@ -46,7 +48,7 @@ namespace PersonalCabinet.Middleware
                 return;
             }
 
-            if (requestCount >= 200) 
+            if (requestCount >= 100) 
             {
                 _cache.Set(unlockKey, DateTime.UtcNow.AddSeconds(60), TimeSpan.FromSeconds(60));
                 _cache.Remove(countKey);

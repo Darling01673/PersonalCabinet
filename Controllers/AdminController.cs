@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using PersonalCabinet.Hubs;
 using PersonalCabinet.Models;
 using System.Security.Claims;
 
@@ -10,10 +12,11 @@ namespace PersonalCabinet.Controllers
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public AdminController(ApplicationDbContext context)
+        private readonly IHubContext<ChatHub> _hubContext;
+        public AdminController(ApplicationDbContext context, IHubContext<ChatHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         public async Task<IActionResult> Index(string sortOrder, string statusFilter, string reasonFilter, string applicantTypeFilter, string searchString, int? page)
@@ -113,6 +116,8 @@ namespace PersonalCabinet.Controllers
                 msg.IsRead = true;
             }
             await _context.SaveChangesAsync();
+            await _hubContext.Clients.Group($"notifications_{application.UserId}")
+                .SendAsync("UpdateNotificationCount");
 
             ViewBag.AllStatuses = new List<string> { "Draft", "Submitted", "InReview", "Approved", "Rejected", "Completed" };
             ViewBag.CurrentUserId = currentUserId;

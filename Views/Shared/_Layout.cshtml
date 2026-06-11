@@ -151,6 +151,21 @@
             updateNotificationBadge();
         }
     });
+    connection.start()
+    .then(() => {
+        console.log("SignalR подключён");
+        return connection.invoke("SubscribeToNotifications");
+    })
+    .then(() => {
+        console.log("Подписан на уведомления");
+        updateNotificationBadge();
+    })
+    .catch(err => console.error("Ошибка SignalR:", err));
+
+connection.onreconnected(() => {
+    console.log("SignalR переподключён, восстанавливаем подписки");
+    connection.invoke("SubscribeToNotifications").catch(err => console.error(err));
+});
 </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

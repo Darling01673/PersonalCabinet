@@ -87,6 +87,20 @@ namespace PersonalCabinet.Controllers
 
             if (application == null) return NotFound();
             if (application.UserId != userId && !User.IsInRole("Admin")) return NotFound();
+            var unreadMessages = application.Messages.Where(m => m.IsRead == false && m.SenderId != userId);
+            foreach (var msg in unreadMessages)
+            {
+                msg.IsRead = true;
+            }
+            await _context.SaveChangesAsync();
+            var adminIds = await _context.Users
+                .Where(u => u.Role == "Admin")
+                .Select(u => u.Id)
+                .ToListAsync();
+            foreach (var adminId in adminIds)
+            {
+                await _hubContext.Clients.Group($"notifications_{adminId}").SendAsync("UpdateNotificationCount");
+            }
 
             ViewBag.CurrentUserId = userId;
             return View(application);
