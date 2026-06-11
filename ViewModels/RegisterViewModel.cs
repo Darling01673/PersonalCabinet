@@ -4,7 +4,7 @@ namespace PersonalCabinet.ViewModels
 {
     public class RegisterViewModel
     {
-        public string FullName { get; set; }
+        public string? FullName { get; set; }
 
         [Required(ErrorMessage = "Email обязателен")]
         [EmailAddress(ErrorMessage = "Некорректный email")]
@@ -18,8 +18,8 @@ namespace PersonalCabinet.ViewModels
         public string Password { get; set; }
 
         public string UserType { get; set; } = "Individual";
-        public string OrgFullName { get; set; }
-        public string OrgShortName { get; set; }
-        public string ContactPerson { get; set; }
+        public string? OrgFullName { get; set; }
+        public string? OrgShortName { get; set; }
+        public string? ContactPerson { get; set; }
     }
 }
