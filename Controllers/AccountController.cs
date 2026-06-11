@@ -30,16 +30,6 @@ namespace PersonalCabinet.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            ModelState.Remove("FullName");
-            ModelState.Remove("OrgFullName");
-            ModelState.Remove("OrgShortName");
-            ModelState.Remove("ContactPerson");
-            if (string.IsNullOrWhiteSpace(model.Phone))
-                ModelState.AddModelError("Phone", "Поле Телефон обязательно");
-            if (string.IsNullOrWhiteSpace(model.Password))
-                ModelState.AddModelError("Password", "Поле Пароль обязательно");
-            if (string.IsNullOrWhiteSpace(model.Email))
-                ModelState.AddModelError("Email", "Поле Email обязательно");
             string consent = Request.Form["PersonalDataConsent"];
             if (consent != "true" && consent != "on" && consent != "True")
             {
@@ -88,6 +78,7 @@ namespace PersonalCabinet.Controllers
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
+
             if (model.UserType == "Organization")
             {
                 _context.OrganizationProfiles.Add(new OrganizationProfile
@@ -109,8 +100,10 @@ namespace PersonalCabinet.Controllers
                     MiddleName = parts.Length > 2 ? parts[2] : ""
                 });
             }
+
             await _context.SaveChangesAsync();
             await SignInAsync(user);
+
             if (user.Role == "Admin")
                 return RedirectToAction("MainMenuAdmin", "Admin");
             else

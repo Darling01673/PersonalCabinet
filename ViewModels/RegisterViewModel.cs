@@ -9,7 +9,8 @@ namespace PersonalCabinet.ViewModels
         [Required(ErrorMessage = "Email обязателен")]
         [EmailAddress(ErrorMessage = "Некорректный email")]
         public string Email { get; set; }
-
+        [Required(ErrorMessage = "Телефон обязателен")]
+        [Phone(ErrorMessage = "Некорректный телефон")]
         public string Phone { get; set; }
 
         [Required(ErrorMessage = "Пароль обязателен")]

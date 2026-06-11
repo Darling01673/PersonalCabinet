@@ -23,6 +23,18 @@
         <div class="step-label">Документы</div>
     </div>
 </div>
+@if (TempData["ValidationErrors"] is List<string> errors && errors.Any())
+{
+        <div class="alert alert-danger">
+            <ul>
+            @foreach (var error in errors)
+            {
+                        <li>@error</li>
+            }
+            </ul>
+        </div>
+}
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display: none;"></div>
 <div class="wizard-container">
     <div class="wizard-content">
         <form method="post" asp-action="Create" enctype="multipart/form-data" id="wizardForm">
@@ -52,7 +64,7 @@
                                     <input type="text" name="FirstName" class="form-control-cabinet" value="@Model.FirstName" required />
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <label class="form-label-cabinet">Отчество</label>
+                                        <label class="form-label-cabinet">Отчество *</label>
                                         <input type="text" name="MiddleName" class="form-control-cabinet" value="@Model.MiddleName" required/>
                                 </div>
                             </div>
@@ -64,7 +76,7 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label-cabinet">СНИЛС</label>
+                                        <label class="form-label-cabinet">СНИЛС *</label>
                                         <input type="text" name="SNILS" class="form-control-cabinet" maxlength="11" value="@Model.SNILS" required />
                                 </div>
                                 <div class="col-md-6 mb-3">
@@ -76,11 +88,11 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label-cabinet">Контактный телефон</label>
-                                        <input type="tel" name="Phone" class="form-control-cabinet" maxlength="11"  value="@Model.Phone" />
+                                            <input type="tel" name="Phone" class="form-control-cabinet" maxlength="11"  value="@Model.Phone" required />
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label-cabinet">ИНН</label>
-                                    <input type="text" name="Inn" class="form-control-cabinet" maxlength="12" value="@Model.Inn" />
+                                        <input type="text" name="Inn" class="form-control-cabinet" maxlength="12" value="@Model.Inn" required  />
                                 </div>
                             </div>
 
