@@ -18,6 +18,25 @@ namespace PersonalCabinet.Hubs
         {
             _context = context;
         }
+        public async Task SubscribeToNotifications()
+        {
+            var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId != null)
+            {
+                string groupName = $"notifications_{userId}";
+                await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+            }
+        }
+
+        public async Task UnsubscribeFromNotifications()
+        {
+            var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId != null)
+            {
+                string groupName = $"notifications_{userId}";
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            }
+        }
 
         public async Task JoinApplicationGroup(long applicationId)
         {
@@ -40,12 +59,14 @@ namespace PersonalCabinet.Hubs
                     await Clients.Caller.SendAsync("ReceiveError", "Сообщение не может быть пустым");
                     return;
                 }
+
                 var userIdClaim = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(userIdClaim) || !long.TryParse(userIdClaim, out long userId))
                 {
                     await Clients.Caller.SendAsync("ReceiveError", "Не удалось определить пользователя");
                     return;
                 }
+
                 bool hasAccess = await _context.Applications
                     .AnyAsync(a => a.Id == applicationId && (a.UserId == userId || Context.User.IsInRole("Admin")));
                 if (!hasAccess)
@@ -53,6 +74,7 @@ namespace PersonalCabinet.Hubs
                     await Clients.Caller.SendAsync("ReceiveError", "Нет доступа к этой заявке");
                     return;
                 }
+
                 var sender = await _context.Users
                     .Include(u => u.IndividualProfile)
                     .Include(u => u.OrganizationProfile)
@@ -88,7 +110,6 @@ namespace PersonalCabinet.Hubs
                     createdAt = formattedDate,
                     isOwn = false
                 };
-
                 var messageForCaller = new
                 {
                     id = message.Id,
@@ -100,6 +121,25 @@ namespace PersonalCabinet.Hubs
 
                 await Clients.OthersInGroup(groupName).SendAsync("ReceiveMessage", messageForOthers);
                 await Clients.Caller.SendAsync("ReceiveMessage", messageForCaller);
+                long recipientUserId;
+                if (Context.User.IsInRole("Admin"))
+                {
+                    var application = await _context.Applications.FindAsync(applicationId);
+                    recipientUserId = application.UserId;
+                }
+                else
+                {
+                    var adminIds = await _context.Users
+                        .Where(u => u.Role == "Admin")
+                        .Select(u => u.Id)
+                        .ToListAsync();
+                    foreach (var adminId in adminIds)
+                    {
+                        await Clients.Group($"notifications_{adminId}").SendAsync("UpdateNotificationCount");
+                    }
+                    return;
+                }
+                await Clients.Group($"notifications_{recipientUserId}").SendAsync("UpdateNotificationCount");
             }
             catch (Exception ex)
             {

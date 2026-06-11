@@ -59,20 +59,34 @@
                         <tbody>
                         @foreach (var app in Model)
                         {
-                                    <tr>
-                                        <td>@app.ApplicationNumber</td>
-                                        <td>@app.Title</td>
-                                        <td>
-                                    @if (app.ApplicantType == "ORGANIZATION")
-                                    {
-                                        @(app.OrganizationShortName ?? app.OrganizationFullName ?? app.User?.Email ?? "—")
-                                    }
-                                    else
-                                    {
-                                        @(app.User?.Email ?? "—")
-                                    }
-                                        </td>
-                                        <td>
+                              <tr>
+                                <td>@app.ApplicationNumber</td>
+                                   <td>@app.Title</td>
+                                     <td>
+                                            <td>
+                                        @if (app.ApplicantType == "INDIVIDUAL")
+                                        {
+                                            var fullName = $"{app.LastName} {app.FirstName} {app.MiddleName}".Trim();
+                                            if (!string.IsNullOrEmpty(fullName))
+                                            {
+                                                @fullName
+                                            }
+                                            else
+                                            {
+                                                @(app.User?.Email ?? "—")
+                                            }
+                                        }
+                                        else if (app.ApplicantType == "ORGANIZATION")
+                                        {
+                                            @(app.OrganizationShortName ?? app.OrganizationFullName ?? app.User?.Email ?? "—")
+                                        }
+                                        else
+                                        {
+                                            @(app.User?.Email ?? "—")
+                                        }
+                             </td>
+                        </td>
+                   <td>
                                     @(app.ApplicantType == "INDIVIDUAL" ? "Физ. лицо" :
                                           app.ApplicantType == "ORGANIZATION" ? "Организация" : "—")
                                         </td>
