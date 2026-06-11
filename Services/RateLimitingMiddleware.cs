@@ -16,9 +16,14 @@ namespace PersonalCabinet.Middleware
         public async Task InvokeAsync(HttpContext context)
         {
             string path = context.Request.Path.ToString();
-            if (path.StartsWith("/css/") || path.StartsWith("/js/") ||
-                path.StartsWith("/images/") || path.StartsWith("/lib/") ||
-                path == "/Home/RateLimit")
+            bool isExcluded = false;
+            if (path.StartsWith("/css/")) isExcluded = true;
+            if (path.StartsWith("/js/")) isExcluded = true;
+            if (path.StartsWith("/images/")) isExcluded = true;
+            if (path.StartsWith("/lib/")) isExcluded = true;
+            if (path.StartsWith("/Home/RateLimit")) isExcluded = true;
+
+            if (isExcluded)
             {
                 await _next(context);
                 return;

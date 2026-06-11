@@ -122,6 +122,7 @@ namespace PersonalCabinet.Controllers
         {
             return View();
         }
+        [AllowAnonymous]
         public IActionResult RateLimit(int seconds)
         {
             ViewBag.Seconds = seconds;
