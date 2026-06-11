@@ -152,10 +152,10 @@
         </div>
 
         <div class="card-cabinet mt-4">
-            <div class="card-header"><i class="bi bi-chat-dots"></i> Чат с заявителем</div>
-            <div class="card-body p-0">
-                <div id="chat-window" style="display: flex; flex-direction: column; height: 495px;">
-                    <div class="chat-messages" id="chat-messages">
+    <div class="card-header"><i class="bi bi-chat-dots"></i> Чат с заявителем</div>
+    <div class="card-body p-0">
+        <div id="chat-window" style="display: flex; flex-direction: column; height: 495px;">
+            <div class="chat-messages" id="chat-messages">
                         @foreach (var msg in Model.Messages.OrderBy(m => m.CreatedAt))
                         {
                             string senderName = "Пользователь";
@@ -172,21 +172,32 @@
                                 else
                                     senderName = msg.Sender.Email;
                             }
-                                <div class="chat-message @(msg.SenderId == (long?)ViewBag.CurrentUserId ? "user" : "operator")">
-                                    <p>@msg.Message1</p>
-                                    <small>@senderName · @msg.CreatedAt?.ToString("dd.MM.yyyy HH:mm")</small>
-                                </div>
+                        <div class="chat-message @(msg.SenderId == (long?)ViewBag.CurrentUserId ? "user" : "operator")">
+                            <p>@msg.Message1</p>
+                            <small>@senderName · @msg.CreatedAt?.ToString("dd.MM.yyyy HH:mm")</small>
+                        </div>
                         }
-                    </div>
-                    <div class="chat-input">
-                        <form id="chat-form">
-                            <input type="text" id="chat-text" placeholder="Введите сообщение..." autocomplete="off" required />
-                            <button type="submit"><i class="bi bi-send-fill"></i></button>
-                        </form>
-                    </div>
+            </div>
+            <div class="chat-input">
+                <div id="chat-file-preview" style="display: none; padding: 6px 12px; background: #f8f9fa; border-top: 1px solid #eee; font-size: 13px; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
+                    <span id="chat-file-name" style="color: #495057; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                        <i class="bi bi-paperclip"></i> <span></span>
+                    </span>
+                    <button type="button" id="btn-remove-file" style="border: none; background: none; color: #dc3545; font-weight: bold; cursor: pointer; font-size: 16px; padding: 0;">&times;</button>
                 </div>
+                <form id="chat-form">
+                            @Html.AntiForgeryToken()
+                    <button type="button" id="btn-attach" style="background: none; border: none; color: #6c757d; font-size: 1.25rem; cursor: pointer; padding: 0 8px;" title="Прикрепить файл">
+                        <i class="bi bi-paperclip"></i>
+                    </button>
+                    <input type="file" id="chat-file" style="display: none;" />
+                    <input type="text" id="chat-text" placeholder="Введите сообщение..." autocomplete="off" required />
+                    <button type="submit"><i class="bi bi-send-fill"></i></button>
+                </form>
             </div>
         </div>
+    </div>
+</div>
     </div>
 </div>
 
@@ -200,6 +211,12 @@
         const chatForm = document.getElementById('chat-form');
         const chatText = document.getElementById('chat-text');
         const messagesContainer = document.getElementById('chat-messages');
+        const btnAttach = document.getElementById('btn-attach');
+        const chatFile = document.getElementById('chat-file');
+        const filePreview = document.getElementById('chat-file-preview');
+        const fileNameSpan = document.querySelector('#chat-file-name span');
+        const btnRemoveFile = document.getElementById('btn-remove-file');
+        const applicationId = @Model.Id;
         let lastMessageId = @(Model.Messages.Any() ? Model.Messages.Max(m => m.Id) : 0);
 
         function scrollToBottom() {
@@ -216,33 +233,126 @@
                 return m;
             });
         }
+
+        // Прикрепление файла
+        if (btnAttach) {
+            btnAttach.addEventListener('click', function() {
+                chatFile.click();
+            });
+        }
+
+        // Предпросмотр файла
+        if (chatFile) {
+            chatFile.addEventListener('change', function () {
+                if (this.files && this.files.length > 0) {
+                    const file = this.files[0];
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert("Файл не должен превышать 10 МБ.");
+                        resetFile();
+                        return;
+                    }
+                    fileNameSpan.textContent = file.name;
+                    filePreview.style.display = 'flex';
+                } else {
+                    resetFile();
+                }
+            });
+        }
+
+        function resetFile() {
+            if (chatFile) chatFile.value = '';
+            if (filePreview) filePreview.style.display = 'none';
+            if (fileNameSpan) fileNameSpan.textContent = '';
+        }
+
+        if (btnRemoveFile) {
+            btnRemoveFile.addEventListener('click', resetFile);
+        }
+
+        // Отправка сообщения (текст + возможно файл)
         chatForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const text = chatText.value.trim();
-            if (!text) return;
+            const hasFile = chatFile && chatFile.files && chatFile.files.length > 0;
 
-            const formData = new FormData();
-            formData.append('id', '@Model.Id');
-            formData.append('messageText', text);
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            if (!text && !hasFile) return;
 
-            const response = await fetch('/Admin/SendMessage', {
-                method: 'POST',
-                body: formData,
-                headers: { 'RequestVerificationToken': token }
-            });
-            if (response.ok) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'chat-message user';
-                const now = new Date();
-                const timeStr = now.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                messageDiv.innerHTML = `<p>${escapeHtml(text)}</p><small>Оператор · ${timeStr}</small>`;
-                messagesContainer.appendChild(messageDiv);
-                chatText.value = '';
-                scrollToBottom();
+            let finalMessage = text;
+
+            // Если есть файл, сначала загружаем его через AddDocument
+            if (hasFile) {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const formData = new FormData();
+                formData.append('id', applicationId);
+                formData.append('file', chatFile.files[0]);
+                formData.append('__RequestVerificationToken', token);
+
+                try {
+                    const response = await fetch('/Application/AddDocument', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (response.ok) {
+                        const fileName = chatFile.files[0].name;
+                        const fileNotification = `Добавлен документ: ${fileName}`;
+                        finalMessage = finalMessage ? `${finalMessage}\n${fileNotification}` : fileNotification;
+                        // Обновляем UI (добавляем документ в список, если нужно)
+                        updateDocumentsUI(fileName);
+                    } else {
+                        alert('Ошибка загрузки документа на сервер.');
+                        return;
+                    }
+                } catch (err) {
+                    console.error("Ошибка при отправке файла:", err);
+                    alert('Не удалось прикрепить файл.');
+                    return;
+                }
+            }
+
+            // Отправляем текстовое сообщение (с возможным уведомлением о файле)
+            const formDataMsg = new FormData();
+            formDataMsg.append('id', applicationId);
+            formDataMsg.append('messageText', finalMessage);
+            const tokenMsg = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            try {
+                const response = await fetch('/Admin/SendMessage', {
+                    method: 'POST',
+                    body: formDataMsg,
+                    headers: { 'RequestVerificationToken': tokenMsg }
+                });
+                if (response.ok) {
+                    // Добавляем сообщение в чат немедленно (оптимистично)
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'chat-message user';
+                    const now = new Date();
+                    const timeStr = now.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    messageDiv.innerHTML = `<p>${escapeHtml(finalMessage)}</p><small>Оператор · ${timeStr}</small>`;
+                    messagesContainer.appendChild(messageDiv);
+                    chatText.value = '';
+                    resetFile();
+                    scrollToBottom();
+                } else {
+                    alert('Ошибка отправки сообщения');
+                }
+            } catch (err) {
+                console.error("Ошибка отправки сообщения:", err);
+                alert('Не удалось отправить сообщение.');
             }
         });
 
+        // Функция обновления списка документов (если нужно)
+        function updateDocumentsUI(fileName) {
+            // Находим блок документов (можно создать, если его нет)
+            const docBlock = document.querySelector('.card-cabinet .card-body ul');
+            if (!docBlock) return;
+            const today = new Date().toLocaleDateString('ru-RU');
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${escapeHtml(fileName)}</span> <small class="text-muted">(загружен сейчас, обновите страницу для скачивания)</small> (${today})`;
+            docBlock.appendChild(li);
+        }
+
+        // Polling для новых сообщений (как было)
         async function fetchNewMessages() {
             try {
                 const response = await fetch(`/Admin/GetNewMessages?id=@Model.Id&lastMessageId=${lastMessageId}`);

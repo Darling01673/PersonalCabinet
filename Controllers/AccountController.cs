@@ -123,6 +123,9 @@ namespace PersonalCabinet.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            if (TempData.ContainsKey("ErrorMessage"))
+                TempData.Remove("ErrorMessage");
+
             return View(new LoginViewModel());
         }
 
