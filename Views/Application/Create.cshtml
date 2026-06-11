@@ -53,7 +53,7 @@
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label-cabinet">Отчество</label>
-                                    <input type="text" name="MiddleName" class="form-control-cabinet" value="@Model.MiddleName" />
+                                        <input type="text" name="MiddleName" class="form-control-cabinet" value="@Model.MiddleName" required/>
                                 </div>
                             </div>
 
@@ -65,7 +65,7 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label-cabinet">СНИЛС</label>
-                                    <input type="text" name="SNILS" class="form-control-cabinet" maxlength="11" value="@Model.SNILS" />
+                                        <input type="text" name="SNILS" class="form-control-cabinet" maxlength="11" value="@Model.SNILS" required />
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label-cabinet">Дата получения СНИЛС</label>
@@ -177,7 +177,7 @@
        value="@Model.RequestedPower?.ToString()" required />
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label-cabinet">Ранее присоединённая мощность (кВт)</label>
+                        <label class="form-label-cabinet">Ранее присоединённая мощность (кВт) *</label>
                         <input type="number" step="1" name="PreviousPowerKw" class="form-control-cabinet"
        value="@Model.PreviousPowerKw.ToString()" required />
                     </div>
