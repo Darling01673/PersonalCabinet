@@ -294,7 +294,7 @@ namespace PersonalCabinet.Controllers
         private string GetSenderName(User sender)
         {
             if (sender.Role == "Admin") return "Оператор";
-            if (sender.UserType == "INDIVIDUAL" && sender.IndividualProfile != null)
+            if ((sender.UserType == "INDIVIDUAL" || sender.UserType == "ENTREPRENEUR" || sender.UserType == "REPRESENTATIVE") && sender.IndividualProfile != null)
                 return $"{sender.IndividualProfile.LastName} {sender.IndividualProfile.FirstName} {sender.IndividualProfile.MiddleName}".Trim();
             if (sender.UserType == "ORGANIZATION" && sender.OrganizationProfile != null)
                 return sender.OrganizationProfile.ShortName ?? sender.OrganizationProfile.FullName ?? sender.Email;

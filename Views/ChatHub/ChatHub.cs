@@ -72,7 +72,7 @@ namespace PersonalCabinet.Hubs
                 else
                     senderName = "Оператор";
             }
-            else if (sender.UserType == "INDIVIDUAL")
+            else if (sender.UserType == "INDIVIDUAL" || sender.UserType == "ENTREPRENEUR" || sender.UserType == "REPRESENTATIVE")
             {
                 var profile = await _db.IndividualProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
                 if (profile != null)

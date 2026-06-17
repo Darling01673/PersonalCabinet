@@ -49,14 +49,14 @@
             <div class="wizard-panel active" id="panel-1">
                 <div class="wizard-panel-title" style="display: flex; justify-content: space-between; align-items: center;">
                     <span><i class="bi bi-person-badge"></i> Данные заявителя</span>
-                    @if (userType == "INDIVIDUAL")
+                    @if (userType == "INDIVIDUAL" || userType == "ENTREPRENEUR" || userType == "REPRESENTATIVE")
                     {
                             <button type="button" id="fillFromProfileBtn" class="btn-fill-profile">
                                 <i class="bi bi-person-bounding-box"></i> Заполнить из профиля
                             </button>
                     }
                 </div>
-                @if (userType == "INDIVIDUAL")
+                @if (userType == "INDIVIDUAL" || userType == "ENTREPRENEUR" || userType == "REPRESENTATIVE")
                 {
                         <div class="individual-fields">
                             <div class="row">
@@ -406,7 +406,7 @@
         if (validateStep(stepNumber)) nextStep();
     }
 
-    @if (userType == "INDIVIDUAL")
+    @if (userType == "INDIVIDUAL" || userType == "ENTREPRENEUR" || userType == "REPRESENTATIVE")
     {
         <text>
             function fillFormWithProfileData(data) {

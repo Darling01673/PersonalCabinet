@@ -196,7 +196,7 @@ namespace PersonalCabinet.Controllers
                 UserType = user.UserType
             };
 
-            if (user.UserType == "INDIVIDUAL" && user.IndividualProfile != null)
+            if (user.UserType == "INDIVIDUAL" || user.UserType == "ENTREPRENEUR" || user.UserType == "REPRESENTATIVE" && user.IndividualProfile != null)
             {
                 model.LastName = user.IndividualProfile.LastName;
                 model.FirstName = user.IndividualProfile.FirstName;
@@ -225,7 +225,7 @@ namespace PersonalCabinet.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Profile(ProfileViewModel model)
         {
-            if (model.UserType == "INDIVIDUAL")
+            if (model.UserType == "INDIVIDUAL" || model.UserType == "ENTREPRENEUR" || model.UserType == "REPRESENTATIVE")
             {
                 ModelState.Remove("OrgFullName");
                 ModelState.Remove("OrgShortName");
@@ -258,7 +258,7 @@ namespace PersonalCabinet.Controllers
                 user.Phone = model.Phone;
                 user.UpdatedAt = DateTime.UtcNow;
 
-                if (user.UserType == "INDIVIDUAL")
+                if (user.UserType == "INDIVIDUAL" || user.UserType == "ENTREPRENEUR" || user.UserType == "REPRESENTATIVE")
                 {
                     if (user.IndividualProfile == null)
                         user.IndividualProfile = new IndividualProfile { UserId = user.Id };

@@ -156,7 +156,8 @@
                                 }
                                 else
                                 {
-                                    if (msg.Sender.UserType == "INDIVIDUAL" && msg.Sender.IndividualProfile != null)
+                                    if ((msg.Sender.UserType == "INDIVIDUAL" || msg.Sender.UserType == "ENTREPRENEUR" || msg.Sender.UserType == "REPRESENTATIVE")
+&& msg.Sender.IndividualProfile != null)
                                     {
                                         senderName = $"{msg.Sender.IndividualProfile.LastName} {msg.Sender.IndividualProfile.FirstName} {msg.Sender.IndividualProfile.MiddleName}".Trim();
                                     }
