@@ -35,8 +35,10 @@
                 <label class="form-label">Тип заявителя</label>
                 <select name="applicantTypeFilter" class="form-control">
                     <option value="">Все</option>
-                    <option value="INDIVIDUAL" selected="@(ViewBag.CurrentApplicantTypeFilter == "INDIVIDUAL")">Физическое лицо</option>
-                    <option value="ORGANIZATION" selected="@(ViewBag.CurrentApplicantTypeFilter == "ORGANIZATION")">Организация</option>
+                   <option value="INDIVIDUAL" selected="@(ViewBag.CurrentApplicantTypeFilter == "INDIVIDUAL")">Физическое лицо</option>
+<option value="ENTREPRENEUR" selected="@(ViewBag.CurrentApplicantTypeFilter == "ENTREPRENEUR")">ИП</option>
+<option value="REPRESENTATIVE" selected="@(ViewBag.CurrentApplicantTypeFilter == "REPRESENTATIVE")">Представитель</option>
+<option value="ORGANIZATION" selected="@(ViewBag.CurrentApplicantTypeFilter == "ORGANIZATION")">Организация</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -97,10 +99,12 @@
                                         @app.User.Email
                                     }
                                         </td>
-                                        <td>
-                                    @(app.ApplicantType == "INDIVIDUAL" ? "Физ. лицо" :
-                                          app.ApplicantType == "ORGANIZATION" ? "Организация" : "—")
-                                        </td>
+                                               <td>
+                                    @(app.ApplicantType == "INDIVIDUAL" ? "Физическое лицо" :
+                                      app.ApplicantType == "ENTREPRENEUR" ? "ИП" :
+                                      app.ApplicantType == "REPRESENTATIVE" ? "Представитель" :
+                                      app.ApplicantType == "ORGANIZATION" ? "Организация" : "—")
+        </td>
                                         <td>@(app.ApplicationReason ?? "—")</td>
                                         <td>@(app.RequestedPower?.ToString() ?? "—")</td>
                                         <td>@app.CreatedAt?.ToString("dd.MM.yyyy")</td>

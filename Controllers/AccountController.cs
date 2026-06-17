@@ -258,7 +258,7 @@ namespace PersonalCabinet.Controllers
                 user.Phone = model.Phone;
                 user.UpdatedAt = DateTime.UtcNow;
 
-                if (user.UserType == "INDIVIDUAL" || user.UserType == "ENTREPRENEUR" || user.UserType == "REPRESENTATIVE")
+                if (user.UserType == "INDIVIDUAL" || user.UserType == "ENTREPRENEUR" || model.UserType == "REPRESENTATIVE")
                 {
                     if (user.IndividualProfile == null)
                         user.IndividualProfile = new IndividualProfile { UserId = user.Id };

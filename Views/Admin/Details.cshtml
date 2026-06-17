@@ -115,11 +115,14 @@
                     <div class="col-4 fw-bold">Тип заявителя:</div>
                     <div class="col-8">
                         @(Model.ApplicantType == "INDIVIDUAL" ? "Физическое лицо" :
-                                  Model.ApplicantType == "ORGANIZATION" ? "Юридическое лицо / Организация" : "—")
+  Model.ApplicantType == "ENTREPRENEUR" ? "ИП" :
+  Model.ApplicantType == "REPRESENTATIVE" ? "Представитель" :
+  Model.ApplicantType == "ORGANIZATION" ? "Организация" : "—")
                     </div>
                 </div>
 
-                @if (Model.ApplicantType == "INDIVIDUAL")
+                @((Model.ApplicantType == "INDIVIDUAL" || Model.ApplicantType == "ENTREPRENEUR" || Model.ApplicantType == "REPRESENTATIVE") ? "Физическое лицо" :
+  Model.ApplicantType == "ORGANIZATION" ? "Организация" : "—")
                 {
                         <div class="individual-fields">
                             <div class="row mb-2"><div class="col-4 fw-bold">ФИО:</div><div class="col-8">@($"{Model.LastName} {Model.FirstName} {Model.MiddleName}".Trim())</div></div>

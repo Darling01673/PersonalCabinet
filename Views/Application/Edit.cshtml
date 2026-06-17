@@ -40,11 +40,13 @@
                         <label class="form-label-cabinet">Тип заявителя</label>
                         <input type="text" class="form-control-cabinet" readonly 
                                value="@(Model.ApplicantType == "INDIVIDUAL" ? "Физическое лицо" : 
-                                       Model.ApplicantType == "ORGANIZATION" ? "Организация" : "—")" />
+          Model.ApplicantType == "ENTREPRENEUR" ? "ИП" : 
+          Model.ApplicantType == "REPRESENTATIVE" ? "Представитель" : 
+          Model.ApplicantType == "ORGANIZATION" ? "Организация" : "—")" />
                     </div>
                 </div>
 
-                @if (Model.ApplicantType == "INDIVIDUAL")
+                @if (Model.ApplicantType == "INDIVIDUAL" || Model.ApplicantType == "ENTREPRENEUR" || Model.ApplicantType == "REPRESENTATIVE")
                 {
                         <div class="individual-fields">
                             <div class="row">

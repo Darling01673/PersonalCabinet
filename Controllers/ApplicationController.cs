@@ -173,7 +173,7 @@ namespace PersonalCabinet.Controllers
                     GuarantyingSupplier = model.GuarantyingSupplier,
                     ApplicantType = applicantType
                 };
-                if (applicantType == "INDIVIDUAL")
+                if (applicantType == "INDIVIDUAL" || applicantType == "ENTREPRENEUR" || applicantType == "REPRESENTATIVE")
                 {
                     application.LastName = model.LastName;
                     application.FirstName = model.FirstName;
@@ -326,7 +326,7 @@ namespace PersonalCabinet.Controllers
                 application.PaymentPlan = model.PaymentPlan;
                 application.GuarantyingSupplier = model.GuarantyingSupplier;
 
-                if (application.ApplicantType == "INDIVIDUAL")
+                if (application.ApplicantType == "INDIVIDUAL" || application.ApplicantType == "ENTREPRENEUR" || application.ApplicantType == "REPRESENTATIVE")
                 {
                     application.LastName = model.LastName;
                     application.FirstName = model.FirstName;

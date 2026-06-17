@@ -63,7 +63,7 @@
                                 <td>@app.ApplicationNumber</td>
                                    <td>@app.Title</td>
                                      <td>
-                                        @if (app.ApplicantType == "INDIVIDUAL")
+                                    @if (app.ApplicantType == "INDIVIDUAL" || app.ApplicantType == "ENTREPRENEUR" || app.ApplicantType == "REPRESENTATIVE")
                                         {
                                             var fullName = $"{app.LastName} {app.FirstName} {app.MiddleName}".Trim();
                                             if (!string.IsNullOrEmpty(fullName))
@@ -85,8 +85,10 @@
                                         }
                                     </td>
                    <td>
-                                    @(app.ApplicantType == "INDIVIDUAL" ? "Физ. лицо" :
-                                          app.ApplicantType == "ORGANIZATION" ? "Организация" : "—")
+                                    @(app.ApplicantType == "INDIVIDUAL" ? "Физическое лицо" :
+  app.ApplicantType == "ENTREPRENEUR" ? "ИП" :
+  app.ApplicantType == "REPRESENTATIVE" ? "Представитель" :
+  app.ApplicantType == "ORGANIZATION" ? "Организация" : "—")
                                         </td>
                                         <td>@app.ObjectAddress</td>
                                         <td>@(app.RequestedPower?.ToString("0.##") ?? "—") кВт</td>
