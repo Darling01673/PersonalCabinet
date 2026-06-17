@@ -32,7 +32,7 @@
                 </div>
             </div>
 
-                @if (Model.UserType == "INDIVIDUAL")
+                @if (Model.UserType == "INDIVIDUAL" || Model.UserType == "ENTREPRENEUR" || Model.UserType == "REPRESENTATIVE")
                 {
                     <div class="form-row">
                         <div class="form-group">
