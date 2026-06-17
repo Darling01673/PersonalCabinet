@@ -150,6 +150,12 @@
             document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
             let targetSection = document.getElementById('sec-' + type);
             if (targetSection) targetSection.classList.add('active');
+             document.querySelectorAll('.form-section:not(.active) input, .form-section:not(.active) textarea, .form-section:not(.active) select').forEach(el => {
+                el.disabled = true;
+            });
+            document.querySelectorAll('.form-section.active input, .form-section.active textarea, .form-section.active select').forEach(el => {
+                el.disabled = false;
+            });
         });
     });
     window.addEventListener('DOMContentLoaded', function() {
@@ -161,6 +167,12 @@
             document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
             let section = document.getElementById('sec-' + currentType);
             if (section) section.classList.add('active');
+             document.querySelectorAll('.form-section:not(.active) input, .form-section:not(.active) textarea, .form-section:not(.active) select').forEach(el => {
+                el.disabled = true;
+            });
+            document.querySelectorAll('.form-section.active input, .form-section.active textarea, .form-section.active select').forEach(el => {
+                el.disabled = false;
+            });
         }
     });
     document.querySelectorAll('.toggle-password').forEach(button => {
