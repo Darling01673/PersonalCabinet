@@ -26,23 +26,6 @@
 <div class="wizard-container">
     <div class="wizard-content">
         <form method="post" asp-action="Create" enctype="multipart/form-data" id="wizardForm">
-            @if (TempData["ErrorMessage"] != null)
-            {
-        <div class="alert alert-danger">
-            <strong>Ошибка:</strong> @TempData["ErrorMessage"]
-        </div>
-            }
-            @if (!ViewContext.ModelState.IsValid)
-            {
-        <div class="alert alert-danger">
-            <ul>
-                        @foreach (var error in ViewContext.ModelState.Values.SelectMany(v => v.Errors))
-                        {
-                        <li>@error.ErrorMessage</li>
-                        }
-            </ul>
-        </div>
-            }
             @Html.AntiForgeryToken()
             <input type="hidden" name="ApplicantType" value="@userType" />
 
