@@ -121,8 +121,7 @@
                     </div>
                 </div>
 
-                @((Model.ApplicantType == "INDIVIDUAL" || Model.ApplicantType == "ENTREPRENEUR" || Model.ApplicantType == "REPRESENTATIVE") ? "Физическое лицо" :
-  Model.ApplicantType == "ORGANIZATION" ? "Организация" : "—")
+                @((Model.ApplicantType == "INDIVIDUAL" || Model.ApplicantType == "ENTREPRENEUR" || Model.ApplicantType == "REPRESENTATIVE"))
                 {
                         <div class="individual-fields">
                             <div class="row mb-2"><div class="col-4 fw-bold">ФИО:</div><div class="col-8">@($"{Model.LastName} {Model.FirstName} {Model.MiddleName}".Trim())</div></div>
@@ -168,8 +167,7 @@
                                 {
                                     senderName = "Администратор";
                                 }
-                                else if ((msg.Sender.UserType == "INDIVIDUAL" || msg.Sender.UserType == "ENTREPRENEUR" || msg.Sender.UserType == "REPRESENTATIVE")
-&& msg.Sender.IndividualProfile != null)
+                                else if ((msg.Sender.UserType == "INDIVIDUAL" || msg.Sender.UserType == "ENTREPRENEUR" || msg.Sender.UserType == "REPRESENTATIVE")&& msg.Sender.IndividualProfile != null)
                                     senderName = $"{msg.Sender.IndividualProfile.LastName} {msg.Sender.IndividualProfile.FirstName} {msg.Sender.IndividualProfile.MiddleName}".Trim();
                                 else if (msg.Sender.UserType == "ORGANIZATION" && msg.Sender.OrganizationProfile != null)
                                     senderName = msg.Sender.OrganizationProfile.ShortName ?? msg.Sender.OrganizationProfile.FullName ?? msg.Sender.Email;
